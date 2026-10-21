@@ -3,7 +3,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { adsenseClient, disclaimer, gaId, site } from "@/lib/site";
+import { adsenseClient, diario, disclaimer, gaId, site } from "@/lib/site";
 import { JsonLd } from "@/components/ui";
 import { LiveBadge, LiveProvider } from "@/components/live";
 import { Ticker } from "@/components/ticker";
@@ -30,7 +30,6 @@ export const viewport: Viewport = {
 const nav = [
   { href: "/", label: "Mercado" },
   { href: "/dolar-cripto/argentina", label: "Dólar cripto" },
-  { href: "/noticias", label: "Noticias" },
   { href: "/aprende", label: "Aprendé" },
   { href: "/indice-miedo-codicia", label: "Miedo y codicia" },
 ];
@@ -58,6 +57,14 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     {n.label}
                   </Link>
                 ))}
+                <a
+                  href={`${diario.url}/?utm_source=mirador&utm_medium=referral`}
+                  target="_blank"
+                  rel="noopener"
+                  className="whitespace-nowrap rounded-lg px-2.5 py-1.5 font-semibold text-fg transition hover:bg-white/5"
+                >
+                  📰 Noticias en {diario.name} ↗
+                </a>
               </nav>
               <span className="hidden md:block">
                 <LiveBadge />
@@ -74,6 +81,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <div>
               <p className="font-bold">{site.name}</p>
               <p className="mt-1 text-muted">{site.tagline}. Solo consulta: acá no se compra ni se vende nada.</p>
+              <p className="mt-2">
+                <a href={`${diario.url}/newsletter?utm_source=mirador&utm_medium=referral`} target="_blank" rel="noopener" className="text-brand hover:underline">
+                  Las noticias del día, en {diario.name} ↗
+                </a>
+              </p>
             </div>
             <ul className="space-y-1 text-muted">
               <li><Link href="/sobre-nosotros" className="hover:text-fg">Sobre nosotros</Link></li>

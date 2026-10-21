@@ -19,6 +19,12 @@ export const site = {
   contactEmail: "hola@miradorcripto.com",
 };
 
+// El diario hermano: las noticias viven ahí y el mirador lo enlaza.
+export const diario = {
+  name: "El Bloque",
+  url: (process.env.NEXT_PUBLIC_DIARIO_URL || "https://el-bloque-theta.vercel.app").replace(/\/$/, ""),
+};
+
 export const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT; // ca-pub-XXXXXXXXXXXXXXXX
 export const gaId = process.env.NEXT_PUBLIC_GA_ID; // G-XXXXXXX
 
