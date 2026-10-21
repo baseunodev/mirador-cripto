@@ -1,103 +1,114 @@
-import Image from "next/image";
+import Link from "next/link";
+import { getArDollars, getFearGreed, getGlobal, getMarkets, getUsdtQuote, REVALIDATE } from "@/lib/data";
+import { getPosts } from "@/lib/content";
+import { countries } from "@/lib/catalog";
+import { compact, fngLabel, number, price } from "@/lib/format";
+import { CoinTable } from "@/components/coin-table";
+import { AdSlot, Card, Change, Unavailable, Updated } from "@/components/ui";
+import { PostList } from "@/components/posts";
 
-export default function Home() {
+export const revalidate = 900;
+
+export default async function Home() {
+  const [coins, global, fng, ar, usdtAr] = await Promise.all([getMarkets(), getGlobal(), getFearGreed(1), getArDollars(), getUsdtQuote("ars")]);
+  const btc = coins.find((c) => c.id === "bitcoin");
+  const eth = coins.find((c) => c.id === "ethereum");
+  const blue = ar.find((d) => d.casa === "blue");
+  const oficial = ar.find((d) => d.casa === "oficial");
+  const news = getPosts("noticias").slice(0, 4);
+  const today = fng[0];
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <>
+      <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Precios de criptomonedas hoy</h1>
+      <p className="mt-1 text-muted">El mercado en vivo, en tu moneda y explicado sin humo.</p>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card>
+          <p className="text-xs text-muted">Bitcoin</p>
+          <p className="text-xl font-bold tabular-nums">{price(btc?.current_price)}</p>
+          <Change value={btc?.price_change_percentage_24h} className="text-sm" />
+        </Card>
+        <Card>
+          <p className="text-xs text-muted">Ethereum</p>
+          <p className="text-xl font-bold tabular-nums">{price(eth?.current_price)}</p>
+          <Change value={eth?.price_change_percentage_24h} className="text-sm" />
+        </Card>
+        <Card>
+          <p className="text-xs text-muted">Capitalización total</p>
+          <p className="text-xl font-bold tabular-nums">{compact(global?.total_market_cap_usd)}</p>
+          <Change value={global?.market_cap_change_24h} className="text-sm" />
+          <p className="text-xs text-muted">Dominancia BTC {number(global?.btc_dominance, 1)}%</p>
+        </Card>
+        <Card>
+          <p className="text-xs text-muted">Miedo y codicia</p>
+          <p className="text-xl font-bold">{today ? `${today.value} · ${fngLabel(today.label)}` : "—"}</p>
+          <Link href="/indice-miedo-codicia" className="text-xs text-brand hover:underline">
+            Qué significa →
+          </Link>
+        </Card>
+      </div>
+
+      <Card className="mt-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-bold">Dólar cripto en Argentina</h2>
+          <Link href="/dolar-cripto/argentina" className="text-sm text-brand hover:underline">
+            Ver brecha e histórico →
+          </Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <div className="mt-3 grid grid-cols-3 gap-3 text-center">
+          <div>
+            <p className="text-xs text-muted">USDT</p>
+            <p className="text-lg font-bold tabular-nums">{price(usdtAr?.buy, "$ ")}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted">Blue</p>
+            <p className="text-lg font-bold tabular-nums">{price(blue?.venta, "$ ")}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted">Oficial</p>
+            <p className="text-lg font-bold tabular-nums">{price(oficial?.venta, "$ ")}</p>
+          </div>
+        </div>
+        <p className="mt-3 text-sm text-muted">
+          Otros países:{" "}
+          {countries
+            .filter((c) => c.slug !== "argentina")
+            .map((c, i) => (
+              <span key={c.slug}>
+                {i > 0 && " · "}
+                <Link href={`/dolar-cripto/${c.slug}`} className="text-brand hover:underline">
+                  {c.name}
+                </Link>
+              </span>
+            ))}
+        </p>
+      </Card>
+
+      <AdSlot slot="home-top" minHeight={120} />
+
+      <Card className="mt-4">
+        <h2 className="mb-3 font-bold">Top 100 por capitalización</h2>
+        {coins.length ? <CoinTable coins={coins.slice(0, 100)} /> : <Unavailable what="los precios" />}
+        <div className="mt-3">
+          <Updated at={btc?.last_updated ?? Date.now()} source="CoinGecko" />
+        </div>
+      </Card>
+
+      {news.length > 0 && (
+        <Card className="mt-4">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="font-bold">Últimas noticias</h2>
+            <Link href="/noticias" className="text-sm text-brand hover:underline">
+              Todas →
+            </Link>
+          </div>
+          <PostList posts={news} />
+        </Card>
+      )}
+
+      <AdSlot slot="home-bottom" />
+      <p className="sr-only">Los precios se actualizan cada {REVALIDATE.markets / 60} minutos.</p>
+    </>
   );
 }

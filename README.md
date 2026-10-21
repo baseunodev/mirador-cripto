@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mirador Cripto
 
-## Getting Started
+Sitio de noticias y datos cripto en español, monetizado con Google AdSense. Solo consulta: no se compra ni se vende nada.
 
-First, run the development server:
+## Qué incluye
+
+| Sección | Ruta | Datos |
+|---|---|---|
+| Dashboard (top 100) | `/` | CoinGecko, DolarApi, CriptoYa, Alternative.me |
+| Ficha por moneda (top 50 pregenerado, resto bajo demanda) | `/precio/{moneda}` | CoinGecko |
+| Conversores (62 pares con demanda) | `/convertir/{moneda}-a-{fiat}` | CoinGecko + CriptoYa / ExchangeRate-API |
+| Dólar cripto (6 países) | `/dolar-cripto/{pais}` | CriptoYa, DolarApi, ExchangeRate-API |
+| Índice de miedo y codicia | `/indice-miedo-codicia` | Alternative.me |
+| Noticias y guías | `/noticias`, `/aprende` | Markdown en `content/` |
+| Institucionales | `/sobre-nosotros`, `/politica-editorial`, etc. | Markdown en `content/paginas/` |
+| SEO | `/sitemap.xml`, `/news-sitemap.xml`, `/feed.xml`, `/robots.txt`, `/ads.txt` | — |
+
+## Cómo publicar una nota
+
+1. Crear `content/noticias/mi-nota.md` (o `content/aprende/...`) con este encabezado:
+
+   ```
+   ---
+   title: Bitcoin cae 8% en un día: qué lo explica
+   description: Una frase con el dato clave.
+   date: 2026-10-21T10:30:00-03:00
+   author: redaccion
+   coins: bitcoin, ethereum
+   ---
+   ```
+2. Escribir el cuerpo en Markdown.
+3. Hacer commit y push: Vercel despliega solo.
+
+`coins` usa los ids de CoinGecko y hace que la nota aparezca en la ficha de cada moneda. Los archivos que empiezan con `_` no se publican (sirven de borrador).
+
+## Desarrollo
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # completar valores
+npm run dev                  # http://localhost:3000
+MOCK_DATA=1 npm run build    # build sin internet, con datos falsos
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Presupuesto de llamadas a CoinGecko (plan Demo, ~10.000/mes)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Todas las llamadas son del servidor y se cachean con ISR: mercados cada 15 min, datos globales cada 1 h, gráficos cada 12 h por moneda. Con tráfico normal queda por debajo del límite. Si crece, subir los tiempos en `src/lib/data.ts` (`REVALIDATE`) o pasar a un plan pago.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy en Vercel
 
-## Learn More
+1. Importar el repo en Vercel (framework: Next.js, sin configuración extra).
+2. Cargar las variables de `.env.example` (sin `MOCK_DATA`).
+3. Conectar el dominio y enviar `/sitemap.xml` y `/news-sitemap.xml` a Google Search Console.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Nota: el plan Hobby de Vercel no permite uso comercial; un sitio con anuncios necesita el plan Pro.
