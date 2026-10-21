@@ -7,7 +7,7 @@ export function Change({ value, className = "" }: { value: number | null | undef
 }
 
 export function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <section className={`rounded-xl border border-border bg-surface p-4 sm:p-5 ${className}`}>{children}</section>;
+  return <section className={`card p-4 sm:p-5 ${className}`}>{children}</section>;
 }
 
 export function Breadcrumbs({ items }: { items: { name: string; href: string }[] }) {

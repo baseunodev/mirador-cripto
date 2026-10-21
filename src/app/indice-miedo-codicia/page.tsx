@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getFearGreed } from "@/lib/data";
 import { date, fngLabel } from "@/lib/format";
+import { Gauge } from "@/components/visuals";
 import { AdSlot, Breadcrumbs, Card, Disclaimer, Unavailable, Updated } from "@/components/ui";
 
 export const revalidate = 3600;
@@ -31,19 +32,7 @@ export default async function FearGreedPage() {
       {today ? (
         <>
           <Card className="mt-5 text-center">
-            <p className="text-6xl font-bold tabular-nums" style={{ color: color(today.value) }}>
-              {today.value}
-            </p>
-            <p className="mt-1 text-xl font-semibold">{fngLabel(today.label)}</p>
-            <div className="mx-auto mt-4 h-3 max-w-md rounded-full" style={{ background: "linear-gradient(90deg, var(--down), #e07b39, var(--muted), #7cb342, var(--up))" }}>
-              <div className="relative h-3">
-                <span className="absolute -top-1 h-5 w-1 rounded bg-fg" style={{ left: `${today.value}%` }} />
-              </div>
-            </div>
-            <div className="mx-auto mt-1 flex max-w-md justify-between text-xs text-muted">
-              <span>0 · Miedo extremo</span>
-              <span>100 · Codicia extrema</span>
-            </div>
+            <Gauge value={today.value} label={today.label} size={300} />
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <p>
                 Hace una semana: <strong>{week ? `${week.value} (${fngLabel(week.label)})` : "—"}</strong>
@@ -61,7 +50,7 @@ export default async function FearGreedPage() {
             <h2 className="mb-3 font-bold">Últimos 30 días</h2>
             <div className="flex h-32 items-end gap-1" role="img" aria-label="Historial del índice en los últimos 30 días">
               {[...data].reverse().map((d) => (
-                <div key={d.timestamp} title={`${date(d.timestamp)}: ${d.value}`} className="flex-1 rounded-t" style={{ height: `${d.value}%`, background: color(d.value) }} />
+                <div key={d.timestamp} title={`${date(d.timestamp)}: ${d.value}`} className="flex-1 rounded-t opacity-80 transition hover:opacity-100" style={{ height: `${d.value}%`, background: color(d.value) }} />
               ))}
             </div>
           </Card>

@@ -1,66 +1,98 @@
 @import "tailwindcss";
 
+/* Tema oscuro fijo: es el estándar en sitios de mercado y hace que los colores de suba/baja resalten. */
 :root {
-  --bg: #f7f8fa;
-  --surface: #ffffff;
-  --fg: #0f172a;
-  --muted: #5b6474;
-  --border: #e3e6eb;
-  --brand: #0e7490; /* azul petróleo: no se confunde con suba (verde) ni baja (rojo) */
-  --brand-soft: #e0f2f6;
-  --up: #15803d;
-  --down: #c62828;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b0f17;
-    --surface: #121826;
-    --fg: #e6e9ef;
-    --muted: #97a0b0;
-    --border: #232b3b;
-    --brand: #38bdf8;
-    --brand-soft: #0c2a3a;
-    --up: #34d399;
-    --down: #f87171;
-  }
+  --bg: #070a12;
+  --surface: #0e1420;
+  --surface-2: #141c2b;
+  --fg: #e8ecf4;
+  --muted: #8a94a8;
+  --border: #1e2738;
+  --brand: #7c5cff;
+  --brand-2: #22d3ee;
+  --brand-soft: rgba(124, 92, 255, 0.14);
+  --up: #16c784;
+  --down: #ea3943;
+  --warn: #f5a524;
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
   --color-brand-soft: var(--brand-soft);
   --color-up: var(--up);
   --color-down: var(--down);
+  --color-warn: var(--warn);
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(124, 92, 255, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(34, 211, 238, 0.12), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--fg);
   font-family: var(--font-sans);
   font-feature-settings: "tnum"; /* números tabulares: las cifras no "bailan" al actualizarse */
 }
 
-.prose-mc {
-  line-height: 1.7;
-  font-size: 1.05rem;
+.tabular-nums { white-space: nowrap; }
+
+.text-gradient {
+  background: linear-gradient(90deg, #a78bfa, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-.prose-mc h2 { font-size: 1.4rem; font-weight: 700; margin: 2rem 0 0.75rem; }
-.prose-mc h3 { font-size: 1.15rem; font-weight: 700; margin: 1.5rem 0 0.5rem; }
+
+.card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.01)), var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 10px 30px -15px rgba(0, 0, 0, 0.6);
+}
+.card-hover { transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+.card-hover:hover { transform: translateY(-2px); border-color: rgba(124, 92, 255, 0.5); box-shadow: 0 12px 40px -18px rgba(124, 92, 255, 0.6); }
+
+/* Parpadeo al cambiar el precio en vivo */
+@keyframes flash-up { from { background: rgba(22, 199, 132, 0.35); } to { background: transparent; } }
+@keyframes flash-down { from { background: rgba(234, 57, 67, 0.35); } to { background: transparent; } }
+.flash-up { animation: flash-up 0.9s ease-out; border-radius: 6px; }
+.flash-down { animation: flash-down 0.9s ease-out; border-radius: 6px; }
+
+/* Cinta de precios */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.marquee { animation: marquee 60s linear infinite; }
+.marquee:hover { animation-play-state: paused; }
+
+@keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+.live-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise 0.5s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee, .live-dot, .rise, .flash-up, .flash-down { animation: none; }
+}
+
+.prose-mc { line-height: 1.75; font-size: 1.05rem; color: #d5dbe6; }
+.prose-mc h2 { font-size: 1.45rem; font-weight: 700; margin: 2rem 0 0.75rem; color: var(--fg); }
+.prose-mc h3 { font-size: 1.15rem; font-weight: 700; margin: 1.5rem 0 0.5rem; color: var(--fg); }
 .prose-mc p { margin: 0 0 1rem; }
 .prose-mc ul, .prose-mc ol { margin: 0 0 1rem 1.25rem; }
 .prose-mc ul { list-style: disc; }
 .prose-mc ol { list-style: decimal; }
-.prose-mc li { margin: 0.25rem 0; }
-.prose-mc a { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
-.prose-mc strong { font-weight: 700; }
-.prose-mc blockquote { border-left: 3px solid var(--brand); padding-left: 1rem; color: var(--muted); margin: 0 0 1rem; }
+.prose-mc li { margin: 0.3rem 0; }
+.prose-mc a { color: #a78bfa; text-decoration: underline; text-underline-offset: 2px; }
+.prose-mc strong { font-weight: 700; color: var(--fg); }
+.prose-mc blockquote { border-left: 3px solid var(--brand); background: var(--brand-soft); padding: 0.75rem 1rem; border-radius: 0 10px 10px 0; color: var(--fg); margin: 0 0 1rem; }
 .prose-mc table { width: 100%; border-collapse: collapse; margin: 0 0 1rem; font-size: 0.95rem; }
 .prose-mc th, .prose-mc td { border-bottom: 1px solid var(--border); padding: 0.5rem; text-align: left; }
-
-.tabular-nums { white-space: nowrap; }

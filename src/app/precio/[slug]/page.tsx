@@ -6,8 +6,9 @@ import { coinIdForSlug, converterCoins, fiats, pairSlug, slugForCoin } from "@/l
 import { compact, date, number, pct, price } from "@/lib/format";
 import { postsForCoin } from "@/lib/content";
 import { site } from "@/lib/site";
-import { AreaChart, downsample } from "@/components/charts";
-import { RangeChart } from "@/components/range-chart";
+import { downsample } from "@/components/charts";
+import { InteractiveChart } from "@/components/interactive-chart";
+import { LiveChange, LivePrice } from "@/components/live";
 import { AdSlot, Breadcrumbs, Card, Change, Disclaimer, JsonLd, Updated } from "@/components/ui";
 import { PostList } from "@/components/posts";
 
@@ -75,29 +76,49 @@ export default async function CoinPage({ params }: Props) {
   return (
     <>
       <Breadcrumbs items={[{ name: "Mercado", href: "/" }, { name: `Precio de ${coin.name}`, href: `/precio/${slug}` }]} />
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Precio de {coin.name} ({sym}) hoy
-          </h1>
-          <p className="mt-2 flex flex-wrap items-baseline gap-3">
-            <span className="text-3xl font-bold tabular-nums sm:text-4xl">{price(coin.current_price)}</span>
-            <Change value={coin.price_change_percentage_24h} className="text-lg" />
-            <span className="text-sm text-muted">en 24 h</span>
-          </p>
-          <Updated at={coin.last_updated} source="CoinGecko" />
+      <Card className="rise">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={coin.image} alt="" width={52} height={52} className="h-13 w-13 rounded-full shadow-[0_0_30px_rgba(124,92,255,0.35)]" />
+            <div>
+              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+                Precio de {coin.name} ({sym}) hoy
+              </h1>
+              <p className="mt-1 flex flex-wrap items-center gap-2">
+                <LivePrice symbol={coin.symbol} initial={coin.current_price} className="text-3xl font-extrabold sm:text-4xl" />
+                <LiveChange symbol={coin.symbol} initial={coin.price_change_percentage_24h} badge />
+              </p>
+            </div>
+          </div>
+          <span className="rounded-full bg-surface-2 px-3 py-1 text-sm text-muted">Puesto #{coin.market_cap_rank}</span>
         </div>
-        <p className="text-sm text-muted">Puesto #{coin.market_cap_rank} por capitalización</p>
-      </div>
-
-      <Card className="mt-5">
-        <RangeChart
-          ranges={[
-            { key: "7d", label: "7 días", node: d7.length > 1 ? <AreaChart points={d7} label={`Precio de ${coin.name} en los últimos 7 días`} /> : null },
-            { key: "30d", label: "30 días", node: d30.length > 1 ? <AreaChart points={downsample(d30)} label={`Precio de ${coin.name} en los últimos 30 días`} /> : null },
-            { key: "1a", label: "1 año", node: d365.length > 1 ? <AreaChart points={downsample(d365)} label={`Precio de ${coin.name} en el último año`} /> : null },
-          ]}
-        />
+        {coin.low_24h != null && coin.high_24h != null && coin.high_24h > coin.low_24h && (
+          <div className="mt-4 max-w-md">
+            <div className="flex justify-between text-xs text-muted">
+              <span>Mín. 24 h {price(coin.low_24h)}</span>
+              <span>Máx. 24 h {price(coin.high_24h)}</span>
+            </div>
+            <div className="relative mt-1.5 h-2 rounded-full bg-gradient-to-r from-down via-warn to-up">
+              <span
+                className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bg bg-fg shadow"
+                style={{ left: `${Math.min(100, Math.max(0, ((coin.current_price - coin.low_24h) / (coin.high_24h - coin.low_24h)) * 100))}%` }}
+              />
+            </div>
+          </div>
+        )}
+        <div className="mt-5">
+          <InteractiveChart
+            ranges={[
+              { key: "7d", label: "7 días", data: downsample(d7, 168) },
+              { key: "30d", label: "30 días", data: downsample(d30, 180) },
+              { key: "1a", label: "1 año", data: downsample(d365, 180) },
+            ]}
+          />
+        </div>
+        <div className="mt-2">
+          <Updated at={coin.last_updated} source="CoinGecko y Binance" />
+        </div>
       </Card>
 
       <AdSlot slot="coin-below-chart" minHeight={120} />

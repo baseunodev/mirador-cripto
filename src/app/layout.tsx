@@ -5,6 +5,10 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { adsenseClient, disclaimer, gaId, site } from "@/lib/site";
 import { JsonLd } from "@/components/ui";
+import { LiveBadge, LiveProvider } from "@/components/live";
+import { Ticker } from "@/components/ticker";
+import { getMarkets } from "@/lib/data";
+import { tickerItems } from "@/lib/view";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,10 +24,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f8fa" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0f17" },
-  ],
+  themeColor: "#070a12",
 };
 
 const nav = [
@@ -34,31 +35,41 @@ const nav = [
   { href: "/indice-miedo-codicia", label: "Miedo y codicia" },
 ];
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const coins = await getMarkets();
+  const ticker = tickerItems(coins);
   return (
     <html lang="es">
       <body className="min-h-screen antialiased">
-        <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
-            <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-              <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full bg-brand text-sm text-white">
-                ◉
+        <LiveProvider symbols={coins.slice(0, 60).map((c) => c.symbol)}>
+          <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur-xl">
+            <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
+              <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-extrabold tracking-tight">
+                <span aria-hidden className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-brand to-brand-2 text-base text-white shadow-[0_0_20px_rgba(124,92,255,0.5)]">
+                  ◉
+                </span>
+                <span>
+                  Mirador <span className="text-gradient">Cripto</span>
+                </span>
+              </Link>
+              <nav aria-label="Principal" className="-mx-1 flex flex-1 gap-1 overflow-x-auto text-sm">
+                {nav.map((n) => (
+                  <Link key={n.href} href={n.href} className="whitespace-nowrap rounded-lg px-2.5 py-1.5 text-muted transition hover:bg-white/5 hover:text-fg">
+                    {n.label}
+                  </Link>
+                ))}
+              </nav>
+              <span className="hidden md:block">
+                <LiveBadge />
               </span>
-              {site.name}
-            </Link>
-            <nav aria-label="Principal" className="-mx-1 flex flex-1 gap-1 overflow-x-auto text-sm">
-              {nav.map((n) => (
-                <Link key={n.href} href={n.href} className="whitespace-nowrap rounded-md px-2 py-1 text-muted hover:bg-brand-soft hover:text-fg">
-                  {n.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-        </header>
+            </div>
+            <Ticker items={ticker} />
+          </header>
 
-        <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+          <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+        </LiveProvider>
 
-        <footer className="mt-12 border-t border-border bg-surface">
+        <footer className="mt-16 border-t border-border bg-surface/60">
           <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 text-sm sm:grid-cols-3">
             <div>
               <p className="font-bold">{site.name}</p>
