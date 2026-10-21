@@ -86,13 +86,29 @@ export async function getGlobal(): Promise<GlobalData | null> {
     };
   };
   const raw = await getJson<Raw>(`${CG}/global`, REVALIDATE.global, cgHeaders());
-  if (!raw) return null;
+  if (!raw?.data?.total_market_cap) return globalFromMarkets(await getMarkets());
   return {
     total_market_cap_usd: raw.data.total_market_cap.usd,
     total_volume_usd: raw.data.total_volume.usd,
     btc_dominance: raw.data.market_cap_percentage.btc,
     eth_dominance: raw.data.market_cap_percentage.eth,
     market_cap_change_24h: raw.data.market_cap_change_percentage_24h_usd,
+  };
+}
+
+/** Respaldo si falla /global: se estima con la suma del top 250 (cubre más del 95% del mercado). */
+function globalFromMarkets(coins: Coin[]): GlobalData | null {
+  if (!coins.length) return null;
+  const total = coins.reduce((a, c) => a + (c.market_cap || 0), 0);
+  const volume = coins.reduce((a, c) => a + (c.total_volume || 0), 0);
+  const cap = (id: string) => coins.find((c) => c.id === id)?.market_cap ?? 0;
+  const prev = coins.reduce((a, c) => a + (c.market_cap || 0) / (1 + (c.price_change_percentage_24h ?? 0) / 100), 0);
+  return {
+    total_market_cap_usd: total,
+    total_volume_usd: volume,
+    btc_dominance: (cap("bitcoin") / total) * 100,
+    eth_dominance: (cap("ethereum") / total) * 100,
+    market_cap_change_24h: prev ? ((total - prev) / prev) * 100 : 0,
   };
 }
 

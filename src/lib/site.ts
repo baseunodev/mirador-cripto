@@ -4,7 +4,11 @@ export const site = {
   tagline: "El mercado cripto, explicado sin humo",
   description:
     "Precios de criptomonedas en vivo, dólar cripto por país, conversores y noticias explicadas en español. Solo consulta: acá no se compra ni se vende nada.",
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, ""),
+  // En Vercel se usa el dominio de producción automáticamente si no se cargó NEXT_PUBLIC_SITE_URL.
+  url: (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000")
+  ).replace(/\/$/, ""),
   locale: "es",
   numberLocale: "es-AR",
   social: {
