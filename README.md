@@ -1,37 +1,29 @@
 # Mirador Cripto
 
-Sitio de noticias y datos cripto en español, monetizado con Google AdSense. Solo consulta: no se compra ni se vende nada.
+Herramienta de datos cripto en español, hermana del diario [El Bloque](https://el-bloque-theta.vercel.app). Solo consulta: no se compra ni se vende nada. Las noticias y guías se publican en El Bloque; el mirador muestra sus titulares y enlaza.
 
 ## Qué incluye
 
 | Sección | Ruta | Datos |
 |---|---|---|
-| Dashboard (top 100) | `/` | CoinGecko, DolarApi, CriptoYa, Alternative.me |
-| Ficha por moneda (top 50 pregenerado, resto bajo demanda) | `/precio/{moneda}` | CoinGecko |
-| Conversores (62 pares con demanda) | `/convertir/{moneda}-a-{fiat}` | CoinGecko + CriptoYa / ExchangeRate-API |
+| Mercado (top 100, mapa de calor, favoritas) | `/` | CoinGecko, Binance (vivo), DolarApi, CriptoYa, Alternative.me |
+| Ficha por moneda | `/precio/{moneda}` | CoinGecko + titulares de El Bloque |
+| Conversores | `/convertir` y `/convertir/{moneda}-a-{fiat}` | CoinGecko + CriptoYa / ExchangeRate-API |
 | Dólar cripto (6 países) | `/dolar-cripto/{pais}` | CriptoYa, DolarApi, ExchangeRate-API |
 | Índice de miedo y codicia | `/indice-miedo-codicia` | Alternative.me |
-| Noticias y guías | `/noticias`, `/aprende` | Markdown en `content/` |
 | Institucionales | `/sobre-nosotros`, `/politica-editorial`, etc. | Markdown en `content/paginas/` |
-| SEO | `/sitemap.xml`, `/news-sitemap.xml`, `/feed.xml`, `/robots.txt`, `/ads.txt` | — |
+| SEO | `/sitemap.xml`, `/robots.txt`, `/ads.txt` | — |
 
-## Cómo publicar una nota
+Extras: buscador global (⌘K o `/`), monedas favoritas guardadas en el navegador, barra inferior en celulares, aviso cuando los precios en vivo no llegan o los datos quedaron viejos.
 
-1. Crear `content/noticias/mi-nota.md` (o `content/aprende/...`) con este encabezado:
+Las rutas viejas `/noticias` y `/aprende` redirigen (301) a El Bloque para no duplicar contenido en Google.
 
-   ```
-   ---
-   title: Bitcoin cae 8% en un día: qué lo explica
-   description: Una frase con el dato clave.
-   date: 2026-10-21T10:30:00-03:00
-   author: redaccion
-   coins: bitcoin, ethereum
-   ---
-   ```
-2. Escribir el cuerpo en Markdown.
-3. Hacer commit y push: Vercel despliega solo.
+## Calidad
 
-`coins` usa los ids de CoinGecko y hace que la nota aparezca en la ficha de cada moneda. Los archivos que empiezan con `_` no se publican (sirven de borrador).
+- `npm test`: pruebas de formatos, buscador, lector del RSS y catálogo.
+- `npm run lint` y `npm run typecheck`.
+- GitHub Actions corre todo lo anterior y un build en cada PR (`.github/workflows/ci.yml`).
+- Control diario de las APIs (`.github/workflows/apis.yml`, script `scripts/check-apis.mjs`): si una API cambia o se cae, falla y GitHub avisa por mail.
 
 ## Desarrollo
 

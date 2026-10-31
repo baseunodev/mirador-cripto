@@ -1,4 +1,5 @@
 // Datos FALSOS solo para desarrollo sin internet (MOCK_DATA=1). Nunca se usan en producción.
+import type { Headline } from "./rss";
 import type { ArDollar, Coin, FearGreed, GlobalData, UsdtQuote } from "./data";
 
 const base: [string, string, string, number, number][] = [
@@ -103,3 +104,18 @@ export const fng = (limit: number): FearGreed[] =>
     const value = Math.round(50 + Math.sin(k / 4) * 25);
     return { value, label: value < 45 ? "Fear" : value > 55 ? "Greed" : "Neutral", timestamp: Date.now() - k * 864e5 };
   });
+
+export const headlines = (): Headline[] =>
+  [
+    ["Bitcoin vuelve a los US$ 67.000: qué está empujando la suba", "mercado/bitcoin-vuelve-67000"],
+    ["El dólar cripto se despega del blue: la brecha llega al 2%", "latam/dolar-cripto-brecha-blue"],
+    ["Ethereum prepara su próxima actualización: qué cambia para el usuario", "mercado/ethereum-actualizacion"],
+    ["Alerta: nueva estafa con falsos soportes de exchanges en WhatsApp", "seguridad/estafa-falsos-soportes"],
+    ["Qué es una stablecoin y por qué no siempre vale un dólar", "guias/que-es-una-stablecoin"],
+    ["Solana cae 5% tras una falla en la red: qué pasó", "mercado/solana-falla-red"],
+  ].map(([title, path], i) => ({
+    title,
+    url: `https://el-bloque-theta.vercel.app/${path}`,
+    date: new Date(Date.now() - i * 2 * 36e5).toISOString(),
+    section: { mercado: "Mercado", latam: "América Latina", seguridad: "Seguridad", guias: "Guías" }[path.split("/")[0]] ?? "Noticias",
+  }));

@@ -1,0 +1,18 @@
+name: Control de APIs
+
+on:
+  schedule:
+    - cron: "0 11 * * *" # 8:00 de Argentina
+  workflow_dispatch:
+
+jobs:
+  apis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/check-apis.mjs
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}

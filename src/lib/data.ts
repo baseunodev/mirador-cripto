@@ -3,6 +3,8 @@
 // Presupuesto: mercados cada 15 min (~2.900/mes), global cada 1 h (~720), gráficos cada 12 h por moneda.
 import "server-only";
 import * as mock from "./mock";
+import { diario } from "./site";
+import { parseRss, type Headline } from "./rss";
 
 const MOCK = process.env.MOCK_DATA === "1";
 const CG = "https://api.coingecko.com/api/v3";
@@ -14,6 +16,7 @@ export const REVALIDATE = {
   fx: 1800,
   usdt: 600,
   fng: 3600,
+  diario: 600,
 };
 
 async function getJson<T>(url: string, revalidate: number, headers: Record<string, string> = {}): Promise<T | null> {
@@ -203,4 +206,17 @@ export async function getConversionRate(fiat: string, cryptoRate: boolean): Prom
   }
   const fx = await getOfficialFx();
   return fx[fiat] ? { rate: fx[fiat], source: "oficial" } : null;
+}
+
+/** Últimos titulares de El Bloque (RSS del diario). Si falla, se muestra solo el link al diario. */
+export async function getDiarioHeadlines(limit = 20): Promise<Headline[]> {
+  if (MOCK) return mock.headlines().slice(0, limit);
+  try {
+    const res = await fetch(`${diario.url}/feed.xml`, { next: { revalidate: REVALIDATE.diario } });
+    if (!res.ok) return [];
+    return parseRss(await res.text(), limit);
+  } catch (err) {
+    console.error("[data] error feed del diario", err);
+    return [];
+  }
 }

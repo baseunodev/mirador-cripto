@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { CoinIcon } from "./coin-icon";
 import { pct, price } from "@/lib/format";
 import { useLive } from "./live";
 
@@ -72,8 +73,7 @@ export function WhatIf({ coins }: { coins: WhatIfCoin[] }) {
                 onClick={() => setCoinId(c.id)}
                 className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition ${c.id === coin.id ? "bg-brand text-white" : "bg-surface-2 text-muted hover:text-fg"}`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={c.image} alt="" width={18} height={18} className="h-[18px] w-[18px] rounded-full" />
+                <CoinIcon src={c.image} symbol={c.symbol} size={18} />
                 {c.name}
               </button>
             ))}

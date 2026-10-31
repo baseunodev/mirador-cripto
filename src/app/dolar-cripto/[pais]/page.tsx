@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getArDollars, getOfficialFx, getUsdtQuote } from "@/lib/data";
+import { diario, diarioLink } from "@/lib/site";
 import { countries, countryBySlug, fiatByCode, pairSlug } from "@/lib/catalog";
 import { exchangeName, pct, price } from "@/lib/format";
 import { Converter } from "@/components/converter";
@@ -151,9 +152,9 @@ export default async function DolarCriptoPage({ params }: Props) {
         <h2 className="mb-2 font-bold">Por qué el dólar cripto es distinto al oficial</h2>
         <p className="text-sm text-muted">{country.context}</p>
         <p className="mt-2 text-sm">
-          <Link href="/aprende/que-es-el-dolar-cripto" className="text-brand hover:underline">
-            Qué es el dólar cripto y qué riesgos tiene →
-          </Link>
+          <a href={diarioLink("/guias/que-es-el-dolar-cripto", "dolar-cripto")} target="_blank" rel="noopener" className="text-brand hover:underline">
+            Qué es el dólar cripto y qué riesgos tiene, en {diario.name} ↗
+          </a>
         </p>
         <p className="mt-2 text-sm">
           Conversores:{" "}

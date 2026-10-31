@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { compact, pct, trendClass } from "@/lib/format";
 import { Sparkline } from "./charts";
 import { LiveChange, LivePrice } from "./live";
+import { CoinIcon } from "./coin-icon";
+import { FavButton, useFavorites } from "./favorites";
 
 export type Row = {
   slug: string;
@@ -21,6 +23,7 @@ export type Row = {
 
 const tabs = [
   { key: "all", label: "Todas" },
+  { key: "fav", label: "★ Favoritas" },
   { key: "up", label: "🚀 Ganadoras" },
   { key: "down", label: "📉 Perdedoras" },
   { key: "stable", label: "Stablecoins" },
@@ -32,6 +35,7 @@ export function MarketTable({ rows }: { rows: Row[] }) {
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<Tab>("all");
   const [limit, setLimit] = useState(25);
+  const { favs } = useFavorites();
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -39,8 +43,9 @@ export function MarketTable({ rows }: { rows: Row[] }) {
     if (tab === "up") r = r.filter((x) => (x.ch24 ?? 0) > 0).sort((a, b) => (b.ch24 ?? 0) - (a.ch24 ?? 0));
     if (tab === "down") r = r.filter((x) => (x.ch24 ?? 0) < 0).sort((a, b) => (a.ch24 ?? 0) - (b.ch24 ?? 0));
     if (tab === "stable") r = r.filter((x) => x.stable);
+    if (tab === "fav") r = r.filter((x) => favs.includes(x.slug));
     return r;
-  }, [rows, q, tab]);
+  }, [rows, q, tab, favs]);
 
   return (
     <div>
@@ -50,9 +55,11 @@ export function MarketTable({ rows }: { rows: Row[] }) {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
+              aria-pressed={tab === t.key}
               className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition ${tab === t.key ? "bg-brand text-white" : "bg-surface-2 text-muted hover:text-fg"}`}
             >
               {t.label}
+              {t.key === "fav" && favs.length > 0 && <span className="ml-1 rounded-full bg-white/20 px-1.5 text-[10px]">{favs.length}</span>}
             </button>
           ))}
         </div>
@@ -73,8 +80,9 @@ export function MarketTable({ rows }: { rows: Row[] }) {
 
       <div className="-mx-1 overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase tracking-wide text-muted">
+          <thead className="sticky top-0 bg-surface text-left text-xs uppercase tracking-wide text-muted">
             <tr className="border-b border-border">
+              <th className="w-8 py-2 font-medium"><span className="sr-only">Favorita</span></th>
               <th className="hidden py-2 pr-2 font-medium sm:table-cell">#</th>
               <th className="py-2 pr-2 font-medium">Moneda</th>
               <th className="py-2 pr-2 text-right font-medium">Precio</th>
@@ -87,11 +95,13 @@ export function MarketTable({ rows }: { rows: Row[] }) {
           <tbody>
             {filtered.slice(0, limit).map((c) => (
               <tr key={c.slug} className="group border-b border-border/60 transition-colors last:border-0 hover:bg-white/[0.03]">
+                <td className="py-3">
+                  <FavButton slug={c.slug} name={c.name} />
+                </td>
                 <td className="hidden py-3 pr-2 text-muted sm:table-cell">{c.rank}</td>
                 <td className="py-3 pr-2">
                   <Link href={`/precio/${c.slug}`} className="flex items-center gap-2.5 font-medium">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={c.image} alt="" width={24} height={24} loading="lazy" className="h-6 w-6 rounded-full transition group-hover:scale-110" />
+                    <CoinIcon src={c.image} symbol={c.symbol} size={26} className="transition group-hover:scale-110" />
                     <span className="truncate group-hover:text-white">{c.name}</span>
                     <span className="text-xs uppercase text-muted">{c.symbol}</span>
                   </Link>
@@ -115,7 +125,11 @@ export function MarketTable({ rows }: { rows: Row[] }) {
             ))}
           </tbody>
         </table>
-        {filtered.length === 0 && <p className="py-8 text-center text-sm text-muted">No encontramos “{q}” en el top {rows.length}.</p>}
+        {filtered.length === 0 && (
+          <p className="py-8 text-center text-sm text-muted">
+            {tab === "fav" && !q ? "Todavía no seguís ninguna moneda. Tocá la ☆ al lado de cualquiera para tenerla acá." : `No encontramos “${q}” en el top ${rows.length}.`}
+          </p>
+        )}
       </div>
       {filtered.length > limit && (
         <button onClick={() => setLimit((l) => l + 25)} className="mt-3 w-full rounded-xl border border-border bg-surface-2 py-2.5 text-sm font-medium text-muted transition hover:border-brand hover:text-fg">

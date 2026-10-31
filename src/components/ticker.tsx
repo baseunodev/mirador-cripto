@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { LiveChange, LivePrice } from "./live";
+import { CoinIcon } from "./coin-icon";
 
 export type TickerItem = { slug: string; symbol: string; image: string; price: number; change: number | null };
 
@@ -15,8 +16,7 @@ export function Ticker({ items }: { items: TickerItem[] }) {
             {items.map((c) => (
               <li key={c.slug}>
                 <Link href={`/precio/${c.slug}`} tabIndex={copy ? -1 : undefined} className="flex items-center gap-1.5 hover:text-white">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.image} alt="" width={16} height={16} className="h-4 w-4 rounded-full" />
+                  <CoinIcon src={c.image} symbol={c.symbol} size={16} />
                   <span className="font-semibold uppercase">{c.symbol}</span>
                   <LivePrice symbol={c.symbol} initial={c.price} className="text-fg/90" />
                   <LiveChange symbol={c.symbol} initial={c.change} />
