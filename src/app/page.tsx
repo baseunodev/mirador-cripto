@@ -8,8 +8,8 @@ import { InteractiveChart } from "@/components/interactive-chart";
 import { LiveChange, LivePrice } from "@/components/live";
 import { MarketTable } from "@/components/market-table";
 import { WhatIf } from "@/components/what-if";
-import { DominanceBar, Gauge, Heatmap } from "@/components/visuals";
-import { AdSlot, Card, Change, Unavailable, Updated } from "@/components/ui";
+import { DominanceBar, FearGreedBar, Heatmap } from "@/components/visuals";
+import { AdSlot, Card, Unavailable, Updated } from "@/components/ui";
 import { CoinIcon } from "@/components/coin-icon";
 import { Headlines } from "@/components/headlines";
 import { diario, diarioLink } from "@/lib/site";
@@ -19,23 +19,23 @@ export const revalidate = 900;
 
 function Movers({ title, coins }: { title: string; coins: Coin[] }) {
   return (
-    <Card>
-      <h2 className="mb-3 text-base font-bold">{title}</h2>
-      <ul className="space-y-1">
+    <div className="bg-surface p-5">
+      <h2 className="eyebrow mb-3">{title}</h2>
+      <ul>
         {coins.map((c) => (
           <li key={c.id}>
-            <Link href={`/precio/${slugForCoin(c.id)}`} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition hover:bg-white/5">
-              <CoinIcon src={c.image} symbol={c.symbol} size={24} />
-              <span className="flex-1 truncate text-sm font-medium">
-                {c.name} <span className="text-xs uppercase text-muted">{c.symbol}</span>
+            <Link href={`/precio/${slugForCoin(c.id)}`} className="-mx-2 flex items-center gap-3 rounded-md px-2 py-2 transition hover:bg-surface-2">
+              <CoinIcon src={c.image} symbol={c.symbol} size={22} />
+              <span className="flex-1 truncate text-sm">
+                {c.name} <span className="mono text-[11px] uppercase text-faint">{c.symbol}</span>
               </span>
-              <LivePrice symbol={c.symbol} initial={c.current_price} className="text-sm text-muted" />
-              <LiveChange symbol={c.symbol} initial={c.price_change_percentage_24h} badge />
+              <LivePrice symbol={c.symbol} initial={c.current_price} className="text-[13px] text-muted" />
+              <LiveChange symbol={c.symbol} initial={c.price_change_percentage_24h} badge className="w-16 text-right" />
             </Link>
           </li>
         ))}
       </ul>
-    </Card>
+    </div>
   );
 }
 
@@ -72,137 +72,114 @@ export default async function Home() {
     return c ? [{ id, symbol: c.symbol, name: c.name, image: c.image, series }] : [];
   });
 
+  const stats = [
+    { k: "Capitalización total", v: compact(global?.total_market_cap_usd), d: global?.market_cap_change_24h },
+    { k: "Volumen 24 h", v: compact(global?.total_volume_usd) },
+  ];
+  const fx = [
+    { k: "USDT", v: usdtAr?.buy, hl: true },
+    { k: "BLUE", v: blue?.venta },
+    { k: "OFICIAL", v: oficial?.venta },
+  ];
+
   return (
     <>
-      <section className="rise grid items-end gap-6 lg:grid-cols-[1fr_auto]">
+      <div className="rise mb-6 flex flex-wrap items-end justify-between gap-2">
         <div>
           <p className="eyebrow">Mercado cripto · {new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Argentina/Buenos_Aires" })}</p>
-          <h1 className="mt-2 text-3xl font-bold sm:text-5xl">
-            Precios cripto <span className="text-gradient">en vivo</span>
-          </h1>
-          <p className="mt-3 max-w-xl text-muted sm:text-lg">Bitcoin, el dólar cripto y las 100 monedas más grandes, en tu moneda y explicado sin humo.</p>
+          <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">Precios cripto en vivo</h1>
         </div>
-        <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:w-[700px]">
-          {[
-            { k: "Mercado total", v: compact(global?.total_market_cap_usd), d: global?.market_cap_change_24h },
-            { k: "Volumen 24 h", v: compact(global?.total_volume_usd) },
-            { k: "Dominancia BTC", v: global ? `${global.btc_dominance.toFixed(1).replace(".", ",")}%` : "—" },
-            { k: "Miedo y codicia", v: today ? `${today.value} · ${fngLabel(today.label)}` : "—", href: "/indice-miedo-codicia" },
-          ].map((x) => (
-            <div key={x.k} className="rounded-xl border border-border bg-surface/70 px-3 py-2.5">
-              <dt className="text-[11px] text-muted">{x.k}</dt>
-              <dd className="mt-0.5 flex flex-wrap items-baseline text-sm font-semibold">
-                {x.href ? (
-                  <Link href={x.href} className="hover:text-brand-2">
-                    {x.v}
-                  </Link>
-                ) : (
-                  x.v
-                )}
-                {x.d != null && <span className={`ml-1.5 text-xs ${x.d >= 0 ? "text-up" : "text-down"}`}>{pct(x.d)}</span>}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+        <p className="max-w-md text-sm text-muted">Bitcoin, el dólar cripto y las 100 monedas más grandes, en tu moneda. Solo consulta: acá no se compra ni se vende.</p>
+      </div>
 
-      <div className="mt-8 grid gap-4 lg:grid-cols-3">
-        <Card className="rise lg:col-span-2">
+      <section className="rise grid gap-px overflow-hidden rounded-xl border border-border bg-border lg:grid-cols-3">
+        <div className="bg-surface p-5 sm:p-7 lg:col-span-2">
           {btc ? (
             <>
-              <div className="flex flex-wrap items-center gap-3">
-                <CoinIcon src={btc.image} symbol="btc" size={44} className="shadow-[0_0_24px_rgba(247,147,26,0.45)]" />
-                <div>
-                  <Link href="/precio/bitcoin" className="text-sm font-semibold text-muted hover:text-fg">
-                    Bitcoin · BTC · ver ficha →
-                  </Link>
-                  <p className="flex flex-wrap items-center gap-2">
-                    <LivePrice symbol="btc" initial={btc.current_price} className="text-3xl font-extrabold sm:text-4xl" />
-                    <LiveChange symbol="btc" initial={btc.price_change_percentage_24h} badge />
-                  </p>
-                </div>
+              <div className="flex items-center gap-3">
+                <CoinIcon src={btc.image} symbol="btc" size={28} />
+                <Link href="/precio/bitcoin" className="eyebrow hover:text-fg">
+                  Bitcoin · BTC/USD →
+                </Link>
               </div>
-              <div className="mt-4">
+              <p className="mt-3 flex flex-wrap items-baseline gap-x-3">
+                <LivePrice symbol="btc" initial={btc.current_price} className="text-4xl font-semibold tracking-tight sm:text-5xl" />
+                <LiveChange symbol="btc" initial={btc.price_change_percentage_24h} badge className="text-sm" />
+                <span className="mono text-[11px] text-faint">24 H</span>
+              </p>
+              <div className="mt-6">
                 <InteractiveChart
                   ranges={[
-                    { key: "7d", label: "7 días", data: downsample(btc7, 168) },
-                    { key: "30d", label: "30 días", data: downsample(btc30, 180) },
-                    { key: "1a", label: "1 año", data: downsample(btc365, 180) },
+                    { key: "7d", label: "7D", data: downsample(btc7, 168) },
+                    { key: "30d", label: "30D", data: downsample(btc30, 180) },
+                    { key: "1a", label: "1A", data: downsample(btc365, 180) },
                   ]}
-                  height={280}
+                  height={260}
                 />
               </div>
             </>
           ) : (
             <Unavailable what="el precio de bitcoin" />
           )}
-        </Card>
-
-        <div className="grid gap-4">
-          <Card className="rise">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">Mercado cripto total</p>
-            <p className="mt-1 text-2xl font-extrabold tabular-nums">{compact(global?.total_market_cap_usd)}</p>
-            <p className="text-sm">
-              <Change value={global?.market_cap_change_24h} /> <span className="text-muted">en 24 h</span>
-            </p>
-            <p className="mt-1 text-xs text-muted">Volumen 24 h: {compact(global?.total_volume_usd)}</p>
-            {global && (
-              <div className="mt-3">
-                <DominanceBar btc={global.btc_dominance} eth={global.eth_dominance} />
-              </div>
-            )}
-          </Card>
-          <Card className="rise">
-            <div className="flex items-baseline justify-between">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">Miedo y codicia</p>
-              <Link href="/indice-miedo-codicia" className="text-xs text-brand hover:underline">
-                Qué es →
-              </Link>
-            </div>
-            {today ? <Gauge value={today.value} label={today.label} size={200} /> : <p className="py-6 text-center text-muted">—</p>}
-          </Card>
         </div>
-      </div>
 
-      <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Movers title="🚀 Las que más suben hoy" coins={byChange.slice(0, 5)} />
-        <Movers title="📉 Las que más caen hoy" coins={byChange.slice(-5).reverse()} />
-        <Card className="md:col-span-2 lg:col-span-1">
-          <div className="flex items-baseline justify-between gap-2">
-            <h2 className="font-bold">🇦🇷 Dólar cripto</h2>
-            <Link href="/dolar-cripto/argentina" className="text-sm text-brand hover:underline">
-              Ver brecha →
-            </Link>
-          </div>
-          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-            {[
-              { k: "USDT", v: usdtAr?.buy, hl: true },
-              { k: "Blue", v: blue?.venta },
-              { k: "Oficial", v: oficial?.venta },
-            ].map((x) => (
-              <div key={x.k} className={`rounded-xl p-2.5 ${x.hl ? "bg-brand-soft ring-1 ring-brand/40" : "bg-surface-2"}`}>
-                <p className="text-[11px] text-muted">{x.k}</p>
-                <p className="text-base font-bold tabular-nums">{price(x.v, "$ ")}</p>
+        <div className="flex flex-col gap-6 bg-surface p-5 sm:p-7">
+          <p className="eyebrow">Mercado global</p>
+          <dl className="grid gap-4">
+            {stats.map((x) => (
+              <div key={x.k} className="flex items-baseline justify-between gap-3 border-b border-line pb-3.5">
+                <dt className="text-[13px] text-muted">{x.k}</dt>
+                <dd className="text-[15px] tabular-nums">
+                  {x.v}
+                  {x.d != null && <span className={`ml-2 text-xs ${x.d >= 0 ? "text-up" : "text-down"}`}>{pct(x.d)}</span>}
+                </dd>
               </div>
             ))}
-          </div>
-          <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
-            {countries
-              .filter((c) => c.slug !== "argentina")
-              .map((c) => (
-                <Link key={c.slug} href={`/dolar-cripto/${c.slug}`} className="rounded-full bg-surface-2 px-2.5 py-1 text-muted transition hover:text-fg">
-                  {c.name}
-                </Link>
+          </dl>
+          {global && <DominanceBar btc={global.btc_dominance} eth={global.eth_dominance} />}
+          {today && (
+            <Link href="/indice-miedo-codicia" className="group block">
+              <FearGreedBar value={today.value} label={fngLabel(today.label)} />
+            </Link>
+          )}
+          <div className="mt-auto rounded-lg border border-border p-4">
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm font-semibold">Dólar cripto · Argentina</span>
+              <Link href="/dolar-cripto/argentina" className="text-xs text-brand hover:underline">
+                Ver brecha →
+              </Link>
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {fx.map((x) => (
+                <div key={x.k}>
+                  <p className="eyebrow text-[10px]">{x.k}</p>
+                  <p className={`mt-1 text-[17px] tabular-nums ${x.hl ? "text-brand" : ""}`}>{price(x.v, "$ ")}</p>
+                </div>
               ))}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+              {countries
+                .filter((c) => c.slug !== "argentina")
+                .map((c) => (
+                  <Link key={c.slug} href={`/dolar-cripto/${c.slug}`} className="hover:text-fg">
+                    {c.name}
+                  </Link>
+                ))}
+            </div>
           </div>
-        </Card>
-      </div>
+        </div>
+      </section>
+
+      <section className="mt-6 grid gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-2">
+        <Movers title="Las que más suben hoy" coins={byChange.slice(0, 5)} />
+        <Movers title="Las que más caen hoy" coins={byChange.slice(-5).reverse()} />
+      </section>
 
       {volatile.length > 0 && (
-        <Card className="mt-4">
-          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="font-bold">Mapa de calor del mercado</h2>
-            <p className="text-xs text-muted">Tamaño: capitalización · Color: variación 24 h · Tocá una para ver su ficha</p>
+        <Card className="mt-6">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-[15px] font-semibold">Mapa de calor</h2>
+            <p className="mono text-[11px] text-faint">TAMAÑO: CAPITALIZACIÓN · COLOR: VARIACIÓN 24 H</p>
           </div>
           <Heatmap coins={coins.filter((c) => !isStable(c)).slice(0, 40)} />
         </Card>
@@ -210,32 +187,33 @@ export default async function Home() {
 
       <AdSlot slot="home-top" minHeight={120} />
 
-      <Card className="mt-4">
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-lg font-bold">Las 100 criptomonedas más grandes</h2>
-          <p className="text-xs text-muted">Tocá ☆ para seguir una moneda: queda guardada en este dispositivo.</p>
+      <section className="mt-6 overflow-hidden rounded-xl border border-border">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border bg-surface px-5 py-4">
+          <h2 className="text-[15px] font-semibold">Las 100 más grandes</h2>
+          <p className="text-xs text-muted">La estrella guarda la moneda en tus favoritas, en este dispositivo.</p>
         </div>
-        {coins.length ? <MarketTable rows={coins.slice(0, 100).map(toRow)} /> : <Unavailable what="los precios" />}
-        <div className="mt-3">
-          <Updated at={btc?.last_updated ?? Date.now()} source="CoinGecko y Binance" />
+        <div className="p-3 sm:p-5">
+          {coins.length ? <MarketTable rows={coins.slice(0, 100).map(toRow)} /> : <Unavailable what="los precios" />}
+          <div className="mt-3">
+            <Updated at={btc?.last_updated ?? Date.now()} source="CoinGecko y Binance" />
+          </div>
         </div>
-      </Card>
+      </section>
 
       {whatIf.length > 0 && (
-        <Card className="mt-4">
-          <h2 className="mb-4 text-lg font-bold">¿Y si hubieras invertido? 🤔</h2>
+        <Card className="mt-6">
+          <h2 className="mb-5 text-[15px] font-semibold">¿Y si hubieras invertido?</h2>
           <WhatIf coins={whatIf} />
         </Card>
       )}
 
       <section className="mt-10">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <p className="eyebrow">Noticias · {diario.name}</p>
-            <h2 className="mt-1 text-2xl font-bold">Qué está moviendo el mercado</h2>
-          </div>
-          <a href={diarioLink("/", "home-noticias")} target="_blank" rel="noopener" className="text-sm font-medium text-brand hover:underline">
-            Todas las noticias en {diario.name} ↗
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-[15px] font-semibold">
+            Qué mueve el mercado <span className="font-normal text-muted">· en {diario.name}</span>
+          </h2>
+          <a href={diarioLink("/", "home-noticias")} target="_blank" rel="noopener" className="text-sm text-brand hover:underline">
+            Todas las noticias ↗
           </a>
         </div>
         <Headlines items={headlines} campaign="home-noticias" />

@@ -2,14 +2,6 @@
 import type { Headline } from "@/lib/rss";
 import { diario, diarioLink } from "@/lib/site";
 
-const sectionColor: Record<string, string> = {
-  Mercado: "#f7931a",
-  Regulación: "#3b82f6",
-  "América Latina": "#10b981",
-  Seguridad: "#ef4444",
-  Guías: "#8b5cf6",
-};
-
 function ago(iso: string) {
   if (!iso) return "";
   const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -34,15 +26,13 @@ export function Headlines({ items, campaign, compact = false }: { items: Headlin
   }
   if (compact) {
     return (
-      <ul className="divide-y divide-border">
+      <ul className="divide-y divide-line">
         {items.map((h) => (
           <li key={h.url}>
             <a href={withUtm(h.url, campaign)} target="_blank" rel="noopener" className="group block py-3">
-              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: sectionColor[h.section] ?? "var(--brand-2)" }}>
-                {h.section}
-              </span>
-              <span className="text-[11px] text-muted"> · {ago(h.date)}</span>
-              <span className="mt-0.5 block font-medium leading-snug group-hover:text-brand-2">{h.title}</span>
+              <span className="mono text-[11px] uppercase tracking-wider text-brand">{h.section}</span>
+              <span className="mono text-[11px] text-faint"> · {ago(h.date)}</span>
+              <span className="mt-1 block font-medium leading-snug group-hover:text-brand">{h.title}</span>
             </a>
           </li>
         ))}
@@ -57,14 +47,13 @@ export function Headlines({ items, campaign, compact = false }: { items: Headlin
             href={withUtm(h.url, campaign)}
             target="_blank"
             rel="noopener"
-            className={`card card-hover group flex h-full flex-col p-4 ${i === 0 ? "justify-end bg-gradient-to-br from-[#1d1546] to-surface lg:p-6" : ""}`}
-            style={{ borderTop: `3px solid ${sectionColor[h.section] ?? "var(--brand)"}` }}
+            className={`card card-hover group flex h-full flex-col p-5 ${i === 0 ? "lg:p-7" : ""}`}
           >
-            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: sectionColor[h.section] ?? "var(--brand-2)" }}>
-              {h.section} <span className="font-normal normal-case tracking-normal text-muted">· {ago(h.date)}</span>
+            <span className="mono text-[11px] uppercase tracking-wider text-brand">
+              {h.section} <span className="normal-case tracking-normal text-faint">· {ago(h.date)}</span>
             </span>
-            <span className={`mt-1.5 font-display font-semibold leading-snug group-hover:text-white ${i === 0 ? "text-xl lg:text-2xl" : "text-base"}`}>{h.title}</span>
-            <span className="mt-3 text-xs text-muted group-hover:text-brand-2">Leer en {diario.name} ↗</span>
+            <span className={`mt-2.5 font-semibold leading-snug ${i === 0 ? "text-xl lg:mt-auto lg:text-[28px] lg:leading-tight" : "text-base"}`}>{h.title}</span>
+            <span className="mt-3 text-xs text-muted group-hover:text-brand">Leer en {diario.name} ↗</span>
           </a>
         </li>
       ))}

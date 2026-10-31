@@ -35,8 +35,9 @@ function layout(items: Coin[], r: Rect, weight: (c: Coin) => number): Cell[] {
 
 function heatColor(ch: number) {
   const k = Math.min(Math.abs(ch) / 8, 1);
-  if (Math.abs(ch) < 0.15) return "rgb(52, 60, 78)";
-  return ch > 0 ? `rgb(${Math.round(20 + 0 * k)}, ${Math.round(90 + 110 * k)}, ${Math.round(70 + 62 * k)})` : `rgb(${Math.round(110 + 124 * k)}, ${Math.round(40 + 17 * k)}, ${Math.round(50 + 17 * k)})`;
+  if (Math.abs(ch) < 0.15) return "rgb(31, 35, 41)";
+  // Tonos apagados que se intensifican con la variación: verde y rojo sobre grafito.
+  return ch > 0 ? `rgb(${Math.round(20 + 10 * k)}, ${Math.round(70 + 110 * k)}, ${Math.round(55 + 75 * k)})` : `rgb(${Math.round(90 + 150 * k)}, ${Math.round(35 + 40 * k)}, ${Math.round(38 + 40 * k)})`;
 }
 
 /** Mapa de calor del mercado: el tamaño es la capitalización (comprimida) y el color, la variación de 24 h. */
@@ -44,7 +45,7 @@ export function Heatmap({ coins }: { coins: Coin[] }) {
   // Raíz cuadrada para que bitcoin no tape todo y las chicas se lean.
   const cells = layout(coins, { x: 0, y: 0, w: 100, h: 100 }, (c) => Math.sqrt(c.market_cap || 1));
   return (
-    <div className="relative aspect-square w-full overflow-hidden rounded-xl sm:aspect-[16/8]">
+    <div className="relative aspect-square w-full overflow-hidden rounded-lg sm:aspect-[16/7]">
       {cells.map(({ x, y, w, h, coin }) => {
         const ch = coin.price_change_percentage_24h ?? 0;
         const area = w * h;
@@ -57,11 +58,11 @@ export function Heatmap({ coins }: { coins: Coin[] }) {
             key={coin.id}
             href={`/precio/${slugForCoin(coin.id)}`}
             title={`${coin.name}: ${pct(ch)} en 24 h`}
-            className="group absolute flex flex-col items-center justify-center overflow-hidden border border-bg text-center text-white transition hover:z-10 hover:brightness-125"
+            className="group absolute flex flex-col items-center justify-center overflow-hidden border-2 border-surface text-center text-fg transition hover:z-10 hover:brightness-125"
             style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%`, background: heatColor(ch) }}
           >
-            {!tiny && <span className={`${area > 55 ? "" : "hidden sm:block"} font-bold leading-none ${big ? "text-xl sm:text-2xl" : "text-[11px] sm:text-sm"}`}>{coin.symbol.toUpperCase()}</span>}
-            {!tiny && <span className={`${mobile} mt-0.5 tabular-nums opacity-90 ${big ? "text-sm" : "text-[10px] sm:text-xs"}`}>{pct(ch)}</span>}
+            {!tiny && <span className={`${area > 55 ? "" : "hidden sm:block"} font-semibold leading-none ${big ? "text-xl sm:text-2xl" : "text-[11px] sm:text-sm"}`}>{coin.symbol.toUpperCase()}</span>}
+            {!tiny && <span className={`${mobile} mono mt-1 opacity-90 ${big ? "text-sm" : "text-[10px] sm:text-xs"}`}>{pct(ch)}</span>}
           </Link>
         );
       })}
@@ -69,7 +70,7 @@ export function Heatmap({ coins }: { coins: Coin[] }) {
   );
 }
 
-const fngColor = (v: number) => (v < 25 ? "#ea3943" : v < 45 ? "#f5a524" : v <= 55 ? "#9aa3b5" : v <= 75 ? "#93d900" : "#16c784");
+const fngColor = (v: number) => (v < 25 ? "#ff5c5c" : v < 45 ? "#f5a524" : v <= 55 ? "#8b929c" : v <= 75 ? "#a7e05a" : "#3ddc97");
 
 /** Velocímetro semicircular de 0 a 100 con aguja. */
 export function Gauge({ value, label, size = 220 }: { value: number; label: string; size?: number }) {
@@ -98,9 +99,9 @@ export function Gauge({ value, label, size = 220 }: { value: number; label: stri
       {seg.map(([a, b, c]) => (
         <path key={a} d={arc(a + 0.8, b - 0.8)} stroke={c} strokeWidth="16" fill="none" strokeLinecap="round" opacity="0.9" />
       ))}
-      <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="var(--fg)" strokeWidth="4" strokeLinecap="round" />
+      <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="var(--fg)" strokeWidth="3" strokeLinecap="round" />
       <circle cx={cx} cy={cy} r="8" fill="var(--fg)" />
-      <text x={cx} y={cy + 40} textAnchor="middle" fontSize="32" fontWeight="800" fill={fngColor(value)}>
+      <text x={cx} y={cy + 40} textAnchor="middle" fontSize="32" fontWeight="600" fontFamily="var(--font-mono)" fill={fngColor(value)}>
         {value}
       </text>
       <text x={cx} y={cy + 58} textAnchor="middle" fontSize="13" fontWeight="600" fill="var(--fg)">
@@ -113,17 +114,43 @@ export function Gauge({ value, label, size = 220 }: { value: number; label: stri
 /** Barra horizontal de dominancia (BTC / ETH / resto). */
 export function DominanceBar({ btc, eth }: { btc: number; eth: number }) {
   const rest = Math.max(0, 100 - btc - eth);
+  const f = (n: number) => n.toFixed(1).replace(".", ",");
   return (
     <div>
-      <div className="flex h-2.5 overflow-hidden rounded-full">
-        <span style={{ width: `${btc}%`, background: "#f7931a" }} />
-        <span style={{ width: `${eth}%`, background: "#7c5cff" }} />
-        <span style={{ width: `${rest}%`, background: "#334155" }} />
+      <div className="flex items-baseline justify-between">
+        <span className="text-[13px] text-muted">Dominancia</span>
+        <span className="text-[15px] tabular-nums">BTC {f(btc)}%</span>
       </div>
-      <div className="mt-1.5 flex justify-between text-[11px] text-muted">
-        <span>BTC {btc.toFixed(1).replace(".", ",")}%</span>
-        <span>ETH {eth.toFixed(1).replace(".", ",")}%</span>
-        <span>Resto {rest.toFixed(1).replace(".", ",")}%</span>
+      <div className="mt-3 flex h-1.5 gap-0.5 overflow-hidden rounded-full">
+        <span style={{ width: `${btc}%`, background: "#f7931a" }} />
+        <span style={{ width: `${eth}%`, background: "#8ea2ff" }} />
+        <span style={{ width: `${rest}%`, background: "#2a2f36" }} />
+      </div>
+      <div className="mono mt-2 flex justify-between text-[10px] text-faint">
+        <span>BTC {f(btc)}%</span>
+        <span>ETH {f(eth)}%</span>
+        <span>RESTO {f(rest)}%</span>
+      </div>
+    </div>
+  );
+}
+
+/** Índice de miedo y codicia como barra lineal con marcador. */
+export function FearGreedBar({ value, label }: { value: number; label: string }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between">
+        <span className="text-[13px] text-muted group-hover:text-fg">Miedo y codicia</span>
+        <span className="text-[15px] tabular-nums">
+          {value} <span className="text-xs" style={{ color: fngColor(value) }}>{label}</span>
+        </span>
+      </div>
+      <div className="relative mt-3 h-1.5 rounded-full" style={{ background: "linear-gradient(90deg, #ff5c5c, #f5a524 40%, #8b929c 50%, #3ddc97)" }}>
+        <span className="absolute -top-[5px] h-4 w-0.5 -translate-x-1/2 bg-fg" style={{ left: `${value}%` }} />
+      </div>
+      <div className="mono mt-2 flex justify-between text-[10px] text-faint">
+        <span>MIEDO EXTREMO</span>
+        <span>CODICIA EXTREMA</span>
       </div>
     </div>
   );

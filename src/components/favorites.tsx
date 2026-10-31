@@ -53,7 +53,7 @@ export function FavButton({ slug, name, withLabel = false }: { slug: string; nam
       aria-pressed={on}
       aria-label={on ? `Quitar ${name} de favoritas` : `Agregar ${name} a favoritas`}
       title={on ? "Quitar de favoritas" : "Agregar a favoritas"}
-      className={`inline-flex items-center gap-1.5 rounded-lg transition ${withLabel ? "border border-border bg-surface-2 px-3 py-1.5 text-sm" : "p-1"} ${on ? "text-warn" : "text-muted hover:text-fg"}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg transition ${withLabel ? "border border-border px-3 py-1.5 text-[13px]" : "p-1"} ${on ? "text-brand" : "text-faint hover:text-fg"}`}
     >
       <svg viewBox="0 0 24 24" width={withLabel ? 16 : 15} height={withLabel ? 16 : 15} fill={on ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
         <path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 16.9l-5.25 2.7 1-5.8L3.5 9.7l5.9-.9z" />

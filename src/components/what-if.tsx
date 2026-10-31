@@ -46,7 +46,7 @@ export function WhatIf({ coins }: { coins: WhatIfCoin[] }) {
           <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted">Si hubieras puesto</p>
           <div className="flex flex-wrap items-center gap-2">
             {amounts.map((a) => (
-              <button key={a} onClick={() => setAmount(a)} className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${amount === a ? "bg-brand text-white" : "bg-surface-2 text-muted hover:text-fg"}`}>
+              <button key={a} onClick={() => setAmount(a)} className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${amount === a ? "bg-brand text-on-brand" : "bg-surface-2 text-muted hover:text-fg"}`}>
                 US$ {a}
               </button>
             ))}
@@ -71,7 +71,7 @@ export function WhatIf({ coins }: { coins: WhatIfCoin[] }) {
               <button
                 key={c.id}
                 onClick={() => setCoinId(c.id)}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition ${c.id === coin.id ? "bg-brand text-white" : "bg-surface-2 text-muted hover:text-fg"}`}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition ${c.id === coin.id ? "bg-brand text-on-brand" : "bg-surface-2 text-muted hover:text-fg"}`}
               >
                 <CoinIcon src={c.image} symbol={c.symbol} size={18} />
                 {c.name}
@@ -83,7 +83,7 @@ export function WhatIf({ coins }: { coins: WhatIfCoin[] }) {
           <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted">hace</p>
           <div className="flex flex-wrap gap-2">
             {periods.map((p) => (
-              <button key={p.key} onClick={() => setDays(p.key)} className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${days === p.key ? "bg-brand text-white" : "bg-surface-2 text-muted hover:text-fg"}`}>
+              <button key={p.key} onClick={() => setDays(p.key)} className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${days === p.key ? "bg-brand text-on-brand" : "bg-surface-2 text-muted hover:text-fg"}`}>
                 {p.label}
               </button>
             ))}
@@ -91,9 +91,9 @@ export function WhatIf({ coins }: { coins: WhatIfCoin[] }) {
         </div>
       </div>
 
-      <div className={`relative overflow-hidden rounded-2xl border p-5 ${up ? "border-up/30 bg-up/[0.07]" : "border-down/30 bg-down/[0.07]"}`}>
+      <div className={`relative overflow-hidden rounded-xl border p-5 ${up ? "border-up/30 bg-up/[0.07]" : "border-down/30 bg-down/[0.07]"}`}>
         <p className="text-sm text-muted">Hoy tendrías</p>
-        <p key={`${coin.id}-${days}-${amount}`} className={`rise mt-1 text-4xl font-extrabold tabular-nums sm:text-5xl ${up ? "text-up" : "text-down"}`}>
+        <p key={`${coin.id}-${days}-${amount}`} className={`rise mt-1 text-4xl font-semibold tabular-nums sm:text-5xl ${up ? "text-up" : "text-down"}`}>
           {price(value)}
         </p>
         <p className="mt-1 text-sm">

@@ -23,9 +23,9 @@ export type Row = {
 
 const tabs = [
   { key: "all", label: "Todas" },
-  { key: "fav", label: "★ Favoritas" },
-  { key: "up", label: "🚀 Ganadoras" },
-  { key: "down", label: "📉 Perdedoras" },
+  { key: "fav", label: "Favoritas" },
+  { key: "up", label: "Suben" },
+  { key: "down", label: "Bajan" },
   { key: "stable", label: "Stablecoins" },
 ] as const;
 type Tab = (typeof tabs)[number]["key"];
@@ -56,10 +56,10 @@ export function MarketTable({ rows }: { rows: Row[] }) {
               key={t.key}
               onClick={() => setTab(t.key)}
               aria-pressed={tab === t.key}
-              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition ${tab === t.key ? "bg-brand text-white" : "bg-surface-2 text-muted hover:text-fg"}`}
+              className={`whitespace-nowrap rounded-md border px-3 py-1.5 text-xs transition ${tab === t.key ? "border-brand bg-brand text-on-brand" : "border-border text-muted hover:text-fg"}`}
             >
               {t.label}
-              {t.key === "fav" && favs.length > 0 && <span className="ml-1 rounded-full bg-white/20 px-1.5 text-[10px]">{favs.length}</span>}
+              {t.key === "fav" && favs.length > 0 && <span className="mono ml-1.5 opacity-70">{favs.length}</span>}
             </button>
           ))}
         </div>
@@ -73,49 +73,49 @@ export function MarketTable({ rows }: { rows: Row[] }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar: bitcoin, sol, pepe…"
-            className="w-full rounded-full border border-border bg-surface-2 py-1.5 pl-8 pr-3 text-sm outline-none placeholder:text-muted focus:border-brand"
+            className="w-full rounded-md border border-border bg-transparent py-1.5 pl-8 pr-3 text-[13px] outline-none placeholder:text-muted focus:border-brand"
           />
         </label>
       </div>
 
       <div className="-mx-1 overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-surface text-left text-xs uppercase tracking-wide text-muted">
+          <thead className="mono text-left text-[11px] uppercase tracking-wider text-faint">
             <tr className="border-b border-border">
               <th className="w-8 py-2 font-medium"><span className="sr-only">Favorita</span></th>
-              <th className="hidden py-2 pr-2 font-medium sm:table-cell">#</th>
-              <th className="py-2 pr-2 font-medium">Moneda</th>
-              <th className="py-2 pr-2 text-right font-medium">Precio</th>
-              <th className="py-2 pr-2 text-right font-medium">24 h</th>
-              <th className="hidden py-2 pr-2 text-right font-medium sm:table-cell">7 d</th>
-              <th className="hidden py-2 pr-2 text-right font-medium md:table-cell">Capitalización</th>
-              <th className="hidden py-2 text-right font-medium lg:table-cell">Últimos 7 días</th>
+              <th className="hidden py-2 pr-2 font-normal sm:table-cell">#</th>
+              <th className="py-2 pr-2 font-normal">Moneda</th>
+              <th className="py-2 pr-2 text-right font-normal">Precio</th>
+              <th className="py-2 pr-2 text-right font-normal">24 h</th>
+              <th className="hidden py-2 pr-2 text-right font-normal sm:table-cell">7 d</th>
+              <th className="hidden py-2 pr-2 text-right font-normal md:table-cell">Capitalización</th>
+              <th className="hidden py-2 text-right font-normal lg:table-cell">Últimos 7 días</th>
             </tr>
           </thead>
           <tbody>
             {filtered.slice(0, limit).map((c) => (
-              <tr key={c.slug} className="group border-b border-border/60 transition-colors last:border-0 hover:bg-white/[0.03]">
+              <tr key={c.slug} className="group border-t border-line transition-colors hover:bg-surface-2">
                 <td className="py-3">
                   <FavButton slug={c.slug} name={c.name} />
                 </td>
-                <td className="hidden py-3 pr-2 text-muted sm:table-cell">{c.rank}</td>
+                <td className="mono hidden py-3 pr-2 text-xs text-faint sm:table-cell">{c.rank}</td>
                 <td className="py-3 pr-2">
-                  <Link href={`/precio/${c.slug}`} className="flex items-center gap-2.5 font-medium">
+                  <Link href={`/precio/${c.slug}`} className="flex items-center gap-3">
                     <CoinIcon src={c.image} symbol={c.symbol} size={26} className="transition group-hover:scale-110" />
-                    <span className="truncate group-hover:text-white">{c.name}</span>
-                    <span className="text-xs uppercase text-muted">{c.symbol}</span>
+                    <span className="truncate font-medium">{c.name}</span>
+                    <span className="mono text-[11px] uppercase text-faint">{c.symbol}</span>
                   </Link>
                 </td>
-                <td className="py-3 pr-2 text-right font-medium">
+                <td className="py-3 pr-2 text-right font-normal">
                   <LivePrice symbol={c.symbol} initial={c.price} />
                 </td>
                 <td className="py-3 pr-2 text-right">
                   <LiveChange symbol={c.symbol} initial={c.ch24} badge />
                 </td>
                 <td className="hidden py-3 pr-2 text-right sm:table-cell">
-                  <span className={`font-medium tabular-nums ${trendClass(c.ch7)}`}>{pct(c.ch7)}</span>
+                  <span className={`text-[13px] tabular-nums ${trendClass(c.ch7)}`}>{pct(c.ch7)}</span>
                 </td>
-                <td className="hidden py-3 pr-2 text-right tabular-nums text-muted md:table-cell">{compact(c.cap)}</td>
+                <td className="hidden py-3 pr-2 text-right text-[13px] tabular-nums text-muted md:table-cell">{compact(c.cap)}</td>
                 <td className="hidden py-3 text-right lg:table-cell">
                   <span className="inline-block">
                     <Sparkline data={c.spark} />
@@ -127,12 +127,12 @@ export function MarketTable({ rows }: { rows: Row[] }) {
         </table>
         {filtered.length === 0 && (
           <p className="py-8 text-center text-sm text-muted">
-            {tab === "fav" && !q ? "Todavía no seguís ninguna moneda. Tocá la ☆ al lado de cualquiera para tenerla acá." : `No encontramos “${q}” en el top ${rows.length}.`}
+            {tab === "fav" && !q ? "Todavía no seguís ninguna moneda. Tocá la estrella al lado de cualquiera para tenerla acá." : `No encontramos “${q}” en el top ${rows.length}.`}
           </p>
         )}
       </div>
       {filtered.length > limit && (
-        <button onClick={() => setLimit((l) => l + 25)} className="mt-3 w-full rounded-xl border border-border bg-surface-2 py-2.5 text-sm font-medium text-muted transition hover:border-brand hover:text-fg">
+        <button onClick={() => setLimit((l) => l + 25)} className="mt-3 w-full rounded-lg border border-border py-2.5 text-sm text-muted transition hover:border-[#3a414b] hover:text-fg">
           Ver más monedas ({filtered.length - limit} más)
         </button>
       )}

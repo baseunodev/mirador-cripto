@@ -62,81 +62,80 @@ export function InteractiveChart({ ranges, height = 300, compact = false }: { ra
     setHover(best);
   };
 
+  const dot = hp ?? geo.pts[geo.pts.length - 1];
+  const dotX = (geo.X(dot[0]) / W) * 100;
+  const dotY = (geo.Y(dot[1]) / geo.H) * 100;
+
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-h-[44px]">
           {hp ? (
             <>
-              <p className="text-lg font-bold tabular-nums">{price(hp[1])}</p>
-              <p className="text-xs text-muted">{fmtDate(hp[0])}</p>
+              <p className="text-base font-medium tabular-nums">{price(hp[1])}</p>
+              <p className="mono text-[11px] text-muted">{fmtDate(hp[0])}</p>
             </>
           ) : (
             !compact && (
               <>
-                <p className={`text-lg font-bold tabular-nums ${up ? "text-up" : "text-down"}`}>{pct(geo.change)}</p>
-                <p className="text-xs text-muted">en {range.label.toLowerCase()}</p>
+                <p className={`text-base font-medium tabular-nums ${up ? "text-up" : "text-down"}`}>{pct(geo.change)}</p>
+                <p className="mono text-[11px] text-muted">en {range.label.toLowerCase()}</p>
               </>
             )
           )}
         </div>
-        <div role="tablist" aria-label="Rango del gráfico" className="flex gap-1 rounded-lg bg-surface-2 p-1">
+        <div role="tablist" aria-label="Rango del gráfico" className="flex gap-0.5 rounded-lg border border-border p-[3px]">
           {available.map((r) => (
             <button
               key={r.key}
               role="tab"
               aria-selected={r.key === range.key}
               onClick={() => setActive(r.key)}
-              className={`rounded-md px-3 py-1 text-sm font-medium transition ${r.key === range.key ? "bg-brand text-white shadow" : "text-muted hover:text-fg"}`}
+              className={`mono rounded-md px-3 py-1.5 text-xs transition ${r.key === range.key ? "bg-border text-fg" : "text-muted hover:text-fg"}`}
             >
               {r.label}
             </button>
           ))}
         </div>
       </div>
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${W} ${geo.H}`}
-        className="h-auto w-full touch-none select-none"
-        role="img"
-        aria-label={`Gráfico de precio: ${pct(geo.change)} en ${range.label}`}
-        onMouseMove={(e) => onMove(e.clientX)}
-        onMouseLeave={() => setHover(null)}
-        onTouchMove={(e) => onMove(e.touches[0].clientX)}
-        onTouchEnd={() => setHover(null)}
-      >
-        <defs>
-          <linearGradient id={`g${gid}`} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.35" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {[0.25, 0.5, 0.75].map((f) => (
-          <line key={f} x1="0" x2={W} y1={PAD.t + f * (geo.H - PAD.t - PAD.b)} y2={PAD.t + f * (geo.H - PAD.t - PAD.b)} stroke="var(--border)" strokeDasharray="3 6" />
-        ))}
-        <path d={geo.area} fill={`url(#g${gid})`} />
-        <path d={geo.line} fill="none" stroke={color} strokeWidth="2.25" strokeLinejoin="round" />
-        <text x={W - 4} y={PAD.t + 4} textAnchor="end" fontSize="12" fill="var(--muted)">
-          {price(geo.max)}
-        </text>
-        <text x={W - 4} y={geo.H - PAD.b - 6} textAnchor="end" fontSize="12" fill="var(--muted)">
-          {price(geo.min)}
-        </text>
-        <text x="4" y={geo.H - 8} fontSize="12" fill="var(--muted)">
-          {fmtDate(geo.pts[0][0])}
-        </text>
-        <text x={W - 4} y={geo.H - 8} fontSize="12" fill="var(--muted)" textAnchor="end">
-          {fmtDate(geo.pts[geo.pts.length - 1][0])}
-        </text>
-        {hp ? (
-          <>
-            <line x1={geo.X(hp[0])} x2={geo.X(hp[0])} y1={PAD.t} y2={geo.H - PAD.b} stroke="var(--muted)" strokeDasharray="4 4" />
-            <circle cx={geo.X(hp[0])} cy={geo.Y(hp[1])} r="5" fill={color} stroke="var(--bg)" strokeWidth="2" />
-          </>
-        ) : (
-          <circle cx={geo.X(geo.pts[geo.pts.length - 1][0])} cy={geo.Y(geo.last)} r="4.5" fill={color} className="live-dot" />
-        )}
-      </svg>
+      <div className="relative" style={{ height: geo.H }}>
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${W} ${geo.H}`}
+          preserveAspectRatio="none"
+          className="absolute inset-0 h-full w-full touch-none select-none"
+          role="img"
+          aria-label={`Gráfico de precio: ${pct(geo.change)} en ${range.label}`}
+          onMouseMove={(e) => onMove(e.clientX)}
+          onMouseLeave={() => setHover(null)}
+          onTouchMove={(e) => onMove(e.touches[0].clientX)}
+          onTouchEnd={() => setHover(null)}
+        >
+          <defs>
+            <linearGradient id={`g${gid}`} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+              <stop offset="100%" stopColor={color} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {[0.25, 0.5, 0.75].map((f) => (
+            <line key={f} x1="0" x2={W} y1={PAD.t + f * (geo.H - PAD.t - PAD.b)} y2={PAD.t + f * (geo.H - PAD.t - PAD.b)} stroke="#1a1d22" vectorEffect="non-scaling-stroke" />
+          ))}
+          <path d={geo.area} fill={`url(#g${gid})`} />
+          <path d={geo.line} fill="none" stroke={color} strokeWidth="1.75" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          {hp && <line x1={geo.X(hp[0])} x2={geo.X(hp[0])} y1={PAD.t} y2={geo.H - PAD.b} stroke="var(--muted)" strokeDasharray="3 4" vectorEffect="non-scaling-stroke" />}
+        </svg>
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-bg ${hp ? "" : "live-dot"}`}
+          style={{ left: `${dotX}%`, top: `${dotY}%`, background: color }}
+        />
+        <span className="mono pointer-events-none absolute right-0 top-0 text-[11px] text-faint">{price(geo.max)}</span>
+        <span className="mono pointer-events-none absolute bottom-7 right-0 text-[11px] text-faint">{price(geo.min)}</span>
+      </div>
+      <div className="mono -mt-5 flex justify-between text-[11px] text-faint">
+        <span>{fmtDate(geo.pts[0][0])}</span>
+        <span>{fmtDate(geo.pts[geo.pts.length - 1][0])}</span>
+      </div>
     </div>
   );
 }

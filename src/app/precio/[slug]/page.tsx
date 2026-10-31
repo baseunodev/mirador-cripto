@@ -85,19 +85,19 @@ export default async function CoinPage({ params }: Props) {
       <Card className="rise">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <CoinIcon src={coin.image} symbol={coin.symbol} size={56} className="shadow-[0_0_30px_rgba(124,92,255,0.35)]" />
+            <CoinIcon src={coin.image} symbol={coin.symbol} size={56} />
             <div>
-              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+              <h1 className="text-lg font-medium text-muted sm:text-xl">
                 Precio de {coin.name} ({sym}) hoy
               </h1>
               <p className="mt-1 flex flex-wrap items-center gap-2">
-                <LivePrice symbol={coin.symbol} initial={coin.current_price} className="text-3xl font-extrabold sm:text-4xl" />
+                <LivePrice symbol={coin.symbol} initial={coin.current_price} className="text-3xl font-semibold sm:text-4xl" />
                 <LiveChange symbol={coin.symbol} initial={coin.price_change_percentage_24h} badge />
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-surface-2 px-3 py-1 text-sm text-muted">Puesto #{coin.market_cap_rank}</span>
+            <span className="mono text-xs text-muted">PUESTO #{coin.market_cap_rank}</span>
             <FavButton slug={slug} name={coin.name} withLabel />
             <ShareButton title={`Precio de ${coin.name} hoy`} />
           </div>

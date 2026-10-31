@@ -3,6 +3,7 @@
 // No gasta el cupo de CoinGecko: el servidor da el primer valor y el WebSocket lo va actualizando.
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { pct, price as fmtPrice } from "@/lib/format";
+import { Icon } from "./icons";
 
 type Tick = { price: number; change: number };
 export type LiveStatus = "connecting" | "live" | "offline";
@@ -125,9 +126,9 @@ export function LiveChange({ symbol, initial, className = "", badge = false }: {
   if (badge) {
     return (
       <span
-        className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums ${up ? "bg-up/15 text-up" : down ? "bg-down/15 text-down" : "bg-white/5 text-muted"} ${className}`}
+        className={`text-[13px] tabular-nums ${up ? "text-up" : down ? "text-down" : "text-muted"} ${className}`}
       >
-        {up ? "▲" : down ? "▼" : ""} {pct(v).replace(/^[+−]/, "")}
+        {pct(v)}
       </span>
     );
   }
@@ -149,16 +150,16 @@ export function LiveBadge() {
   const { status, updatedAt } = useLiveStatus();
   const age = useAgeMinutes(updatedAt);
   const cfg = {
-    live: { dot: "live-dot bg-up", text: "En vivo" },
-    connecting: { dot: "live-dot bg-warn", text: "Conectando…" },
-    offline: { dot: "bg-warn", text: age ? `Actualizado hace ${age} min` : "Actualizado cada 15 min" },
+    live: { dot: "live-dot bg-up", text: "EN VIVO", color: "text-up" },
+    connecting: { dot: "live-dot bg-warn", text: "CONECTANDO", color: "text-warn" },
+    offline: { dot: "bg-warn", text: age ? `HACE ${age} MIN` : "CADA 15 MIN", color: "text-warn" },
   }[status];
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-2.5 py-1 text-xs text-muted"
+      className={`mono inline-flex items-center gap-1.5 whitespace-nowrap text-[11px] tracking-wider ${cfg.color}`}
       title={status === "offline" ? "Los precios en vivo no están disponibles. Se muestran los del servidor." : undefined}
     >
-      <span className={`h-2 w-2 rounded-full ${cfg.dot}`} />
+      <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
       {cfg.text}
     </span>
   );
@@ -177,7 +178,7 @@ export function LiveNotice() {
   return (
     <div role="status" className="border-b border-warn/30 bg-warn/10 text-warn">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2 text-xs sm:text-sm">
-        <span aria-hidden>⚠</span>
+        <Icon name="alert" size={16} />
         <p className="flex-1 text-fg/90">
           {stale
             ? `Los precios pueden estar desactualizados: la última actualización fue hace ${age >= 120 ? `${Math.floor(age / 60)} horas` : `${age} minutos`}.`
