@@ -1,6 +1,8 @@
+import { useId } from "react";
 // Gráficos en SVG puro, renderizados en el servidor: cero JavaScript extra y buen Core Web Vitals.
 
 export function Sparkline({ data, width = 120, height = 36 }: { data: number[]; width?: number; height?: number }) {
+  const id = `sp${useId().replace(/:/g, "")}`;
   if (data.length < 2) return null;
   const min = Math.min(...data);
   const max = Math.max(...data);
@@ -8,9 +10,19 @@ export function Sparkline({ data, width = 120, height = 36 }: { data: number[]; 
   const step = width / (data.length - 1);
   const d = data.map((v, i) => `${i ? "L" : "M"}${(i * step).toFixed(1)} ${(height - ((v - min) / span) * height).toFixed(1)}`).join("");
   const up = data[data.length - 1] >= data[0];
+  const c = up ? "var(--up)" : "var(--down)";
+  const ly = height - ((data[data.length - 1] - min) / span) * height;
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true" className="overflow-visible">
-      <path d={d} fill="none" stroke={up ? "var(--up)" : "var(--down)"} strokeWidth="1.5" />
+      <defs>
+        <linearGradient id={id} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor={c} stopOpacity="0.32" />
+          <stop offset="1" stopColor={c} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={`${d}L${width} ${height}L0 ${height}Z`} fill={`url(#${id})`} />
+      <path d={d} fill="none" stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
+      <circle cx={width} cy={ly} r="2" fill={c} />
     </svg>
   );
 }

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getArDollars, getOfficialFx, getUsdtQuote } from "@/lib/data";
+import { getArDollars, getArGapHistory, getOfficialFx, getUsdtQuote } from "@/lib/data";
+import { diario, diarioLink } from "@/lib/site";
 import { countries, countryBySlug, fiatByCode, pairSlug } from "@/lib/catalog";
 import { exchangeName, pct, price } from "@/lib/format";
 import { Converter } from "@/components/converter";
+import { GapChart } from "@/components/gap-chart";
 import { AdSlot, Breadcrumbs, Card, Disclaimer, Unavailable, Updated } from "@/components/ui";
 
 export const revalidate = 600;
@@ -37,7 +39,7 @@ export default async function DolarCriptoPage({ params }: Props) {
   if (!country) notFound();
   const fiat = fiatByCode(country.fiat)!;
   const isAr = country.slug === "argentina";
-  const [q, fx, ar] = await Promise.all([getUsdtQuote(country.fiat), getOfficialFx(), isAr ? getArDollars() : Promise.resolve([])]);
+  const [q, fx, ar, gapHist] = await Promise.all([getUsdtQuote(country.fiat), getOfficialFx(), isAr ? getArDollars() : Promise.resolve([]), isAr ? getArGapHistory(180) : Promise.resolve([])]);
   const oficial = isAr ? ar.find((d) => d.casa === "oficial")?.venta : fx[country.fiat];
   const blue = ar.find((d) => d.casa === "blue")?.venta;
   const mep = ar.find((d) => d.casa === "bolsa")?.venta;
@@ -110,6 +112,15 @@ export default async function DolarCriptoPage({ params }: Props) {
         </Card>
       )}
 
+      {isAr && gapHist.length > 10 && (
+        <Card className="mt-4">
+          <h2 className="font-bold">Brecha entre el dólar cripto y el blue, últimos 6 meses</h2>
+          <p className="mb-4 mt-1 text-sm text-muted">Por encima de 0%, el USDT sale más caro que el blue; por debajo, más barato. Valores de venta de cada día.</p>
+          <GapChart points={gapHist} />
+          <p className="mono mt-3 text-[11px] uppercase tracking-wider text-faint">Fuente: ArgentinaDatos</p>
+        </Card>
+      )}
+
       <AdSlot slot="dolar-cripto-mid" minHeight={120} />
 
       {q && (
@@ -151,9 +162,9 @@ export default async function DolarCriptoPage({ params }: Props) {
         <h2 className="mb-2 font-bold">Por qué el dólar cripto es distinto al oficial</h2>
         <p className="text-sm text-muted">{country.context}</p>
         <p className="mt-2 text-sm">
-          <Link href="/aprende/que-es-el-dolar-cripto" className="text-brand hover:underline">
-            Qué es el dólar cripto y qué riesgos tiene →
-          </Link>
+          <a href={diarioLink("/guias/que-es-el-dolar-cripto", "dolar-cripto")} target="_blank" rel="noopener" className="text-brand hover:underline">
+            Qué es el dólar cripto y qué riesgos tiene, en {diario.name} ↗
+          </a>
         </p>
         <p className="mt-2 text-sm">
           Conversores:{" "}

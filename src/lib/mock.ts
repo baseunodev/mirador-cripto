@@ -1,4 +1,5 @@
 // Datos FALSOS solo para desarrollo sin internet (MOCK_DATA=1). Nunca se usan en producción.
+import type { Headline } from "./rss";
 import type { ArDollar, Coin, FearGreed, GlobalData, UsdtQuote } from "./data";
 
 const base: [string, string, string, number, number][] = [
@@ -102,4 +103,35 @@ export const fng = (limit: number): FearGreed[] =>
   Array.from({ length: limit }, (_, k) => {
     const value = Math.round(50 + Math.sin(k / 4) * 25);
     return { value, label: value < 45 ? "Fear" : value > 55 ? "Greed" : "Neutral", timestamp: Date.now() - k * 864e5 };
+  });
+
+export const headlines = (): Headline[] =>
+  [
+    ["Bitcoin vuelve a los US$ 67.000: qué está empujando la suba", "mercado/bitcoin-vuelve-67000"],
+    ["El dólar cripto se despega del blue: la brecha llega al 2%", "latam/dolar-cripto-brecha-blue"],
+    ["Ethereum prepara su próxima actualización: qué cambia para el usuario", "mercado/ethereum-actualizacion"],
+    ["Alerta: nueva estafa con falsos soportes de exchanges en WhatsApp", "seguridad/estafa-falsos-soportes"],
+    ["Qué es una stablecoin y por qué no siempre vale un dólar", "guias/que-es-una-stablecoin"],
+    ["Solana cae 5% tras una falla en la red: qué pasó", "mercado/solana-falla-red"],
+  ].map(([title, path], i) => ({
+    title,
+    url: `https://el-bloque-theta.vercel.app/${path}`,
+    date: new Date(Date.now() - i * 2 * 36e5).toISOString(),
+    section: { mercado: "Mercado", latam: "América Latina", seguridad: "Seguridad", guias: "Guías" }[path.split("/")[0]] ?? "Noticias",
+  }));
+
+export const predictions = () =>
+  [
+    ["¿Bitcoin arriba de US$ 100.000 el 31 de diciembre?", 0.23, 41e6],
+    ["¿Bitcoin arriba de US$ 70.000 el 30 de noviembre?", 0.46, 18e6],
+    ["¿Ethereum arriba de US$ 4.000 a fin de año?", 0.19, 9e6],
+    ["¿Se aprueba un ETF de Solana en 2026?", 0.64, 6e6],
+    ["¿Bitcoin toca un nuevo máximo histórico en 2026?", 0.31, 12e6],
+  ].map(([question, yes, volume]) => ({ question: question as string, yes: yes as number, volume: volume as number, endDate: "2026-12-31T00:00:00Z", url: "https://polymarket.com" }));
+
+export const gapHistory = (days: number) =>
+  Array.from({ length: days }, (_, i) => {
+    const d = new Date(Date.now() - (days - i) * 864e5).toISOString().slice(0, 10);
+    const blue = 1000 + i * 1.1 + Math.sin(i / 9) * 15;
+    return { date: d, blue, cripto: blue * (1 + 0.01 + Math.sin(i / 13) * 0.025) };
   });

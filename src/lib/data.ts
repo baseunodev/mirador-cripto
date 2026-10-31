@@ -2,7 +2,10 @@
 // para no pasarse del límite gratuito de CoinGecko (~10.000 llamadas/mes en el plan Demo).
 // Presupuesto: mercados cada 15 min (~2.900/mes), global cada 1 h (~720), gráficos cada 12 h por moneda.
 import "server-only";
+import { pickMarkets, type PredictionMarket, type RawEvent } from "./polymarket";
 import * as mock from "./mock";
+import { diario } from "./site";
+import { parseRss, type Headline } from "./rss";
 
 const MOCK = process.env.MOCK_DATA === "1";
 const CG = "https://api.coingecko.com/api/v3";
@@ -14,6 +17,7 @@ export const REVALIDATE = {
   fx: 1800,
   usdt: 600,
   fng: 3600,
+  diario: 600,
 };
 
 async function getJson<T>(url: string, revalidate: number, headers: Record<string, string> = {}): Promise<T | null> {
@@ -203,4 +207,51 @@ export async function getConversionRate(fiat: string, cryptoRate: boolean): Prom
   }
   const fx = await getOfficialFx();
   return fx[fiat] ? { rate: fx[fiat], source: "oficial" } : null;
+}
+
+/** Últimos titulares de El Bloque (RSS del diario). Si falla, se muestra solo el link al diario. */
+export async function getDiarioHeadlines(limit = 20): Promise<Headline[]> {
+  if (MOCK) return mock.headlines().slice(0, limit);
+  try {
+    const res = await fetch(`${diario.url}/feed.xml`, { next: { revalidate: REVALIDATE.diario } });
+    if (!res.ok) return [];
+    return parseRss(await res.text(), limit);
+  } catch (err) {
+    console.error("[data] error feed del diario", err);
+    return [];
+  }
+}
+
+export type { PredictionMarket } from "./polymarket";
+
+/**
+ * Probabilidades de Polymarket para preguntas sobre las principales criptos.
+ * Se muestran como dato atribuido ("lo que apuesta el mercado"), nunca como recomendación.
+ * Se leen los eventos con etiqueta cripto: el listado general lo copan política y deportes.
+ */
+export async function getPredictionMarkets(limit = 6): Promise<PredictionMarket[]> {
+  if (MOCK) return mock.predictions().slice(0, limit);
+  const raw = await getJson<RawEvent[]>(
+    "https://gamma-api.polymarket.com/events?tag_slug=crypto&active=true&closed=false&archived=false&order=volume&ascending=false&limit=50",
+    REVALIDATE.diario,
+  );
+  return Array.isArray(raw) ? pickMarkets(raw, limit) : [];
+}
+
+export type GapPoint = { date: string; cripto: number; blue: number };
+
+/** Historial diario del dólar cripto y el blue en Argentina (ArgentinaDatos). */
+export async function getArGapHistory(days = 180): Promise<GapPoint[]> {
+  if (MOCK) return mock.gapHistory(days);
+  type Raw = { fecha: string; venta: number }[];
+  const [cripto, blue] = await Promise.all([
+    getJson<Raw>("https://api.argentinadatos.com/v1/cotizaciones/dolares/cripto", 21600),
+    getJson<Raw>("https://api.argentinadatos.com/v1/cotizaciones/dolares/blue", 21600),
+  ]);
+  if (!cripto?.length || !blue?.length) return [];
+  const blueBy = new Map(blue.map((b) => [b.fecha.slice(0, 10), b.venta]));
+  return cripto
+    .map((c) => ({ date: c.fecha.slice(0, 10), cripto: c.venta, blue: blueBy.get(c.fecha.slice(0, 10)) ?? 0 }))
+    .filter((p) => p.cripto > 0 && p.blue > 0)
+    .slice(-days);
 }

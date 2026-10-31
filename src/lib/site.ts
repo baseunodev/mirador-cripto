@@ -3,7 +3,7 @@ export const site = {
   name: "Mirador Cripto",
   tagline: "El mercado cripto, explicado sin humo",
   description:
-    "Precios de criptomonedas en vivo, dólar cripto por país, conversores y noticias explicadas en español. Solo consulta: acá no se compra ni se vende nada.",
+    "Precios de criptomonedas en vivo, dólar cripto por país, conversores y el índice de miedo y codicia, en español. Solo consulta: acá no se compra ni se vende nada.",
   // En Vercel se usa el dominio de producción automáticamente si no se cargó NEXT_PUBLIC_SITE_URL.
   url: (
     process.env.NEXT_PUBLIC_SITE_URL ||
@@ -24,6 +24,10 @@ export const diario = {
   name: "El Bloque",
   url: (process.env.NEXT_PUBLIC_DIARIO_URL || "https://el-bloque-theta.vercel.app").replace(/\/$/, ""),
 };
+
+/** Link al diario con UTM, para medir cuántas visitas le manda el mirador. */
+export const diarioLink = (path = "/", campaign = "nav") =>
+  `${diario.url}${path}${path.includes("?") ? "&" : "?"}utm_source=mirador&utm_medium=referral&utm_campaign=${campaign}`;
 
 export const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT; // ca-pub-XXXXXXXXXXXXXXXX
 export const gaId = process.env.NEXT_PUBLIC_GA_ID; // G-XXXXXXX

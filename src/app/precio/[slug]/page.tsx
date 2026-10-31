@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getChart, getCoin, getConversionRate, getMarkets } from "@/lib/data";
+import { getChart, getCoin, getConversionRate, getDiarioHeadlines, getMarkets } from "@/lib/data";
 import { coinIdForSlug, converterCoins, fiats, pairSlug, slugForCoin } from "@/lib/catalog";
 import { compact, date, number, pct, price } from "@/lib/format";
-import { postsForCoin } from "@/lib/content";
+import { headlinesFor } from "@/lib/rss";
 import { site } from "@/lib/site";
 import { downsample } from "@/components/charts";
 import { InteractiveChart } from "@/components/interactive-chart";
 import { LiveChange, LivePrice } from "@/components/live";
 import { AdSlot, Breadcrumbs, Card, Change, Disclaimer, JsonLd, Updated } from "@/components/ui";
-import { PostList } from "@/components/posts";
+import { CoinIcon } from "@/components/coin-icon";
+import { FavButton } from "@/components/favorites";
+import { ShareButton } from "@/components/share";
+import { Headlines } from "@/components/headlines";
+import { diario, diarioLink } from "@/lib/site";
 
 export const revalidate = 900;
 export const dynamicParams = true; // monedas fuera del top 50 se generan al primer pedido
@@ -40,7 +44,8 @@ export default async function CoinPage({ params }: Props) {
   const [coin, markets] = await Promise.all([getCoin(id), getMarkets()]);
   if (!coin) notFound();
 
-  const [d30, d365, ...rates] = await Promise.all([
+  const [headlines, d30, d365, ...rates] = await Promise.all([
+    getDiarioHeadlines(30),
     getChart(id, 30),
     getChart(id, 365),
     ...fiats.map((f) => getConversionRate(f.code, f.cryptoRate)),
@@ -51,7 +56,8 @@ export default async function CoinPage({ params }: Props) {
   const d7: [number, number][] = spark.map((p, i) => [now - (spark.length - i) * 36e5, p]);
   const local = fiats.map((f, i) => ({ fiat: f, rate: rates[i] })).filter((x) => x.rate && x.fiat.code !== "usd");
   const ars = local.find((x) => x.fiat.code === "ars");
-  const news = postsForCoin(id);
+  const about = headlinesFor(headlines, coin.name, coin.symbol);
+  const news = (about.length ? about : headlines).slice(0, 4);
   const related = markets.filter((m) => m.id !== id && Math.abs(m.market_cap_rank - coin.market_cap_rank) <= 3).slice(0, 6);
 
   const faqs = [
@@ -79,19 +85,22 @@ export default async function CoinPage({ params }: Props) {
       <Card className="rise">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={coin.image} alt="" width={52} height={52} className="h-13 w-13 rounded-full shadow-[0_0_30px_rgba(124,92,255,0.35)]" />
+            <CoinIcon src={coin.image} symbol={coin.symbol} size={56} />
             <div>
-              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+              <h1 className="text-lg font-medium text-muted sm:text-xl">
                 Precio de {coin.name} ({sym}) hoy
               </h1>
               <p className="mt-1 flex flex-wrap items-center gap-2">
-                <LivePrice symbol={coin.symbol} initial={coin.current_price} className="text-3xl font-extrabold sm:text-4xl" />
+                <LivePrice symbol={coin.symbol} initial={coin.current_price} className="text-3xl font-semibold sm:text-4xl" />
                 <LiveChange symbol={coin.symbol} initial={coin.price_change_percentage_24h} badge />
               </p>
             </div>
           </div>
-          <span className="rounded-full bg-surface-2 px-3 py-1 text-sm text-muted">Puesto #{coin.market_cap_rank}</span>
+          <div className="flex items-center gap-2">
+            <span className="mono text-xs text-muted">PUESTO #{coin.market_cap_rank}</span>
+            <FavButton slug={slug} name={coin.name} withLabel />
+            <ShareButton title={`Precio de ${coin.name} hoy`} />
+          </div>
         </div>
         {coin.low_24h != null && coin.high_24h != null && coin.high_24h > coin.low_24h && (
           <div className="mt-4 max-w-md">
@@ -177,12 +186,15 @@ export default async function CoinPage({ params }: Props) {
         </Card>
       </div>
 
-      {news.length > 0 && (
-        <Card className="mt-4">
-          <h2 className="mb-3 font-bold">Qué está pasando con {coin.name}</h2>
-          <PostList posts={news} />
-        </Card>
-      )}
+      <Card className="mt-4">
+        <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-bold">{about.length ? `Qué está pasando con ${coin.name}` : "Lo último del mercado"}</h2>
+          <a href={diarioLink("/mercado", "ficha")} target="_blank" rel="noopener" className="text-sm text-brand hover:underline">
+            Más en {diario.name} ↗
+          </a>
+        </div>
+        <Headlines items={news} campaign="ficha" compact />
+      </Card>
 
       <Card className="mt-4">
         <h2 className="mb-3 font-bold">Preguntas frecuentes</h2>
