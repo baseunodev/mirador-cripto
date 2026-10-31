@@ -42,8 +42,16 @@ export function GapChart({ points }: { points: GapPoint[] }) {
       <div className="relative h-[220px]">
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full" role="img" aria-label="Brecha diaria entre el dólar cripto y el blue">
           <line x1="0" x2={W} y1={zero} y2={zero} stroke="#2a2f36" vectorEffect="non-scaling-stroke" />
-          <path d={`${line}L${W} ${zero}L0 ${zero}Z`} fill="var(--brand)" fillOpacity="0.08" />
-          <path d={line} fill="none" stroke="var(--brand)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+          <defs>
+            <linearGradient id="gap-fill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="var(--brand)" stopOpacity="0.3" />
+              <stop offset="1" stopColor="var(--brand)" stopOpacity="0.02" />
+            </linearGradient>
+          </defs>
+          <g className="reveal">
+            <path d={`${line}L${W} ${zero}L0 ${zero}Z`} fill="url(#gap-fill)" />
+            <path d={line} fill="none" stroke="var(--brand)" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" className="glow-brand" />
+          </g>
         </svg>
         <span className="mono absolute right-0 -translate-y-full text-[11px] text-faint" style={{ top: `${(zero / H) * 100}%` }}>
           0% = IGUAL AL BLUE

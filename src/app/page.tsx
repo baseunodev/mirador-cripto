@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { getArDollars, getChart, getDiarioHeadlines, getFearGreed, getGlobal, getMarkets, getUsdtQuote, REVALIDATE } from "@/lib/data";
 import { countries, slugForCoin } from "@/lib/catalog";
-import { compact, fngLabel, pct, price } from "@/lib/format";
+import { compact, pct, price } from "@/lib/format";
 import { isStable, toRow } from "@/lib/view";
 import { downsample } from "@/components/charts";
 import { InteractiveChart } from "@/components/interactive-chart";
 import { LiveChange, LivePrice } from "@/components/live";
 import { MarketTable } from "@/components/market-table";
 import { WhatIf } from "@/components/what-if";
-import { DominanceBar, FearGreedBar, Heatmap } from "@/components/visuals";
+import { DominanceBar, Gauge, Heatmap } from "@/components/visuals";
 import { AdSlot, Card, Unavailable, Updated } from "@/components/ui";
 import { CoinIcon } from "@/components/coin-icon";
 import { Headlines } from "@/components/headlines";
@@ -139,7 +139,8 @@ export default async function Home() {
           {global && <DominanceBar btc={global.btc_dominance} eth={global.eth_dominance} />}
           {today && (
             <Link href="/indice-miedo-codicia" className="group block">
-              <FearGreedBar value={today.value} label={fngLabel(today.label)} />
+              <span className="text-[13px] text-muted transition group-hover:text-fg">Miedo y codicia</span>
+              <Gauge value={today.value} label={today.label} size={200} />
             </Link>
           )}
           <div className="mt-auto rounded-lg border border-border p-4">

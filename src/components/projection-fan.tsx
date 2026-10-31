@@ -85,18 +85,32 @@ export function ProjectionFan({ coins }: { coins: FanCoin[] }) {
 
       <div className="relative mt-6" style={{ height: H }}>
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full" role="img" aria-label={`Rango de escenarios para ${coin.name} a ${hl.label}`}>
+          <defs>
+            <linearGradient id="fan-in" x1="0" x2="1">
+              <stop offset={g.histW / W} stopColor="var(--brand)" stopOpacity="0.55" />
+              <stop offset="1" stopColor="var(--brand)" stopOpacity="0.16" />
+            </linearGradient>
+            <linearGradient id="fan-out" x1="0" x2="1">
+              <stop offset={g.histW / W} stopColor="var(--cyan)" stopOpacity="0.28" />
+              <stop offset="1" stopColor="var(--cyan)" stopOpacity="0.07" />
+            </linearGradient>
+          </defs>
           <line x1={g.histW} x2={g.histW} y1="0" y2={H} stroke="#2a2f36" strokeDasharray="3 4" vectorEffect="non-scaling-stroke" />
-          <path d={g.outer} fill="var(--brand)" fillOpacity="0.07" />
-          <path d={g.inner} fill="var(--brand)" fillOpacity="0.16" />
-          <path d={g.mid} stroke="var(--brand)" strokeOpacity="0.6" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
-          <path d={g.line} fill="none" stroke="var(--fg)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+          <g key={`${coin.id}-${days}`} className="reveal">
+            <path d={g.outer} fill="url(#fan-out)" />
+            <path d={g.inner} fill="url(#fan-in)" />
+            <path d={g.mid} stroke="var(--fg)" strokeOpacity="0.35" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
+            <path d={g.line} fill="none" stroke="var(--brand)" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" className="glow-brand" />
+          </g>
         </svg>
+        <span aria-hidden className="ping absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand" style={{ left: `${(g.histW / W) * 100}%`, top: `${(g.Y(coin.price) / H) * 100}%` }} />
+        <span aria-hidden className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand shadow-[0_0_10px_var(--brand)]" style={{ left: `${(g.histW / W) * 100}%`, top: `${(g.Y(coin.price) / H) * 100}%` }} />
         <span className="mono absolute left-0 top-0 text-[11px] text-faint">ÚLTIMOS 90 DÍAS</span>
         <span className="mono absolute top-0 text-[11px] text-faint" style={{ left: `${(g.histW / W) * 100 + 1}%` }}>
           ESCENARIOS A {hl.label}
         </span>
         {(["p95", "p84", "p16", "p05"] as const).map((k) => (
-          <span key={k} className={`mono absolute right-0 -translate-y-1/2 text-[11px] ${k === "p84" || k === "p16" ? "text-brand" : "text-faint"}`} style={{ top: `${(g.Y(g.last[k]) / H) * 100}%` }}>
+          <span key={k} className={`mono absolute right-0 -translate-y-1/2 text-[11px] ${k === "p84" || k === "p16" ? "text-brand" : "text-cyan"}`} style={{ top: `${(g.Y(g.last[k]) / H) * 100}%` }}>
             {fmt(g.last[k])}
           </span>
         ))}
@@ -117,7 +131,7 @@ export function ProjectionFan({ coins }: { coins: FanCoin[] }) {
           </p>
         </div>
         <div className="bg-surface p-4">
-          <p className="eyebrow">9 de cada 10 escenarios</p>
+          <p className="eyebrow text-cyan">9 de cada 10 escenarios</p>
           <p className="mt-1.5 text-xl tabular-nums">
             {fmt(g.last.p05)} – {fmt(g.last.p95)}
           </p>

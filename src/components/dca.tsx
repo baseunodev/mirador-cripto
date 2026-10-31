@@ -119,8 +119,17 @@ export function DcaCalculator({ coins }: { coins: DcaCoin[] }) {
       {r.value && (
         <div className="mt-6">
           <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-[200px] w-full" role="img" aria-label="Valor de la compra periódica comparado con lo invertido">
-            <path d={r.invested} fill="none" stroke="#5c636d" strokeDasharray="4 4" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-            <path d={r.value} fill="none" stroke={up ? "var(--up)" : "var(--down)"} strokeWidth="1.75" vectorEffect="non-scaling-stroke" />
+            <defs>
+              <linearGradient id="dca-fill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stopColor={up ? "var(--up)" : "var(--down)"} stopOpacity="0.35" />
+                <stop offset="1" stopColor={up ? "var(--up)" : "var(--down)"} stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <g key={`${r.value.length}-${r.invested.length}`} className="reveal">
+              <path d={`${r.value}L${W} ${H}L0 ${H}Z`} fill="url(#dca-fill)" />
+              <path d={r.invested} fill="none" stroke="#5c636d" strokeDasharray="4 4" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+              <path d={r.value} fill="none" stroke={up ? "var(--up)" : "var(--down)"} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" className={up ? "glow-up" : "glow-down"} />
+            </g>
           </svg>
           <div className="mono mt-2 flex gap-5 text-[11px] text-muted">
             <span className="flex items-center gap-1.5">
