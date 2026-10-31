@@ -2,6 +2,7 @@
 // para no pasarse del límite gratuito de CoinGecko (~10.000 llamadas/mes en el plan Demo).
 // Presupuesto: mercados cada 15 min (~2.900/mes), global cada 1 h (~720), gráficos cada 12 h por moneda.
 import "server-only";
+import { pickMarkets, type PredictionMarket, type RawEvent } from "./polymarket";
 import * as mock from "./mock";
 import { diario } from "./site";
 import { parseRss, type Headline } from "./rss";
@@ -221,34 +222,20 @@ export async function getDiarioHeadlines(limit = 20): Promise<Headline[]> {
   }
 }
 
-export type PredictionMarket = { question: string; yes: number; volume: number; endDate: string; url: string };
+export type { PredictionMarket } from "./polymarket";
 
 /**
  * Probabilidades de Polymarket para preguntas sobre las principales criptos.
  * Se muestran como dato atribuido ("lo que apuesta el mercado"), nunca como recomendación.
+ * Se leen los eventos con etiqueta cripto: el listado general lo copan política y deportes.
  */
 export async function getPredictionMarkets(limit = 6): Promise<PredictionMarket[]> {
   if (MOCK) return mock.predictions().slice(0, limit);
-  type Raw = { question?: string; slug?: string; outcomes?: string; outcomePrices?: string; volume?: string | number; volumeNum?: number; endDate?: string; closed?: boolean; active?: boolean; events?: { slug?: string }[] };
-  const raw = await getJson<Raw[]>("https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=300&order=volumeNum&ascending=false", REVALIDATE.diario);
-  if (!Array.isArray(raw)) return [];
-  const re = /\b(bitcoin|btc|ethereum|eth|solana|sol|xrp)\b/i;
-  return raw
-    .flatMap((m) => {
-      if (!m.question || !re.test(m.question) || m.closed) return [];
-      try {
-        const outcomes = JSON.parse(m.outcomes ?? "[]") as string[];
-        const prices = (JSON.parse(m.outcomePrices ?? "[]") as string[]).map(Number);
-        const i = outcomes.findIndex((o) => /^yes$/i.test(o));
-        if (i < 0 || !(prices[i] >= 0)) return [];
-        const slug = m.events?.[0]?.slug ?? m.slug;
-        return [{ question: m.question, yes: prices[i], volume: Number(m.volumeNum ?? m.volume ?? 0), endDate: m.endDate ?? "", url: `https://polymarket.com/event/${slug}` }];
-      } catch {
-        return [];
-      }
-    })
-    .filter((m) => m.yes > 0.01 && m.yes < 0.99)
-    .slice(0, limit);
+  const raw = await getJson<RawEvent[]>(
+    "https://gamma-api.polymarket.com/events?tag_slug=crypto&active=true&closed=false&archived=false&order=volume&ascending=false&limit=50",
+    REVALIDATE.diario,
+  );
+  return Array.isArray(raw) ? pickMarkets(raw, limit) : [];
 }
 
 export type GapPoint = { date: string; cripto: number; blue: number };
