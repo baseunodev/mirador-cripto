@@ -11,6 +11,8 @@ const checks = [
   ["DolarApi", "https://dolarapi.com/v1/dolares", (d) => Array.isArray(d) && d.some((x) => x.casa === "blue")],
   ["ExchangeRate-API", "https://open.er-api.com/v6/latest/USD", (d) => d?.result === "success" && d.rates?.EUR > 0],
   ["Miedo y codicia", "https://api.alternative.me/fng/?limit=1", (d) => Number(d?.data?.[0]?.value) >= 0],
+  ["Polymarket", "https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=5", (d) => Array.isArray(d) && typeof d[0]?.outcomePrices === "string"],
+  ["ArgentinaDatos", "https://api.argentinadatos.com/v1/cotizaciones/dolares/cripto", (d) => Array.isArray(d) && d.at(-1)?.venta > 0],
   ["Feed de El Bloque", `${diario}/feed.xml`, (t) => typeof t === "string" && t.includes("<item>"), {}, "text"],
 ];
 

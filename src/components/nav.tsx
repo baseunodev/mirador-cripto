@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useOpenSearch } from "./search";
 import { Icon } from "./icons";
 
-export type NavItem = { href: string; label: string; match: string; icon: string };
+export type NavItem = { href: string; label: string; match: string; icon: string; short?: string; tab?: boolean };
 
 const isActive = (path: string, match: string) => (match === "/" ? path === "/" || path.startsWith("/precio") : path.startsWith(match));
 
@@ -38,20 +38,20 @@ export function MobileTabBar({ items, newsHref }: { items: NavItem[]; newsHref: 
   return (
     <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
       <div className="flex">
-        {items.slice(0, 2).map((n) => (
+        {items.filter((n) => n.tab).slice(0, 2).map((n) => (
           <Link key={n.href} href={n.href} className={cls(isActive(path, n.match))}>
             <Icon name={n.icon} size={20} />
-            {n.label}
+            {n.short ?? n.label}
           </Link>
         ))}
         <button onClick={openSearch} className={cls(false)}>
           <Icon name="search" size={20} />
           Buscar
         </button>
-        {items.slice(2, 3).map((n) => (
+        {items.filter((n) => n.tab).slice(2, 3).map((n) => (
           <Link key={n.href} href={n.href} className={cls(isActive(path, n.match))}>
             <Icon name={n.icon} size={20} />
-            {n.label}
+            {n.short ?? n.label}
           </Link>
         ))}
         <a href={newsHref} target="_blank" rel="noopener" className={cls(false)}>

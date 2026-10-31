@@ -37,10 +37,11 @@ export const viewport: Viewport = {
 };
 
 const nav: NavItem[] = [
-  { href: "/", label: "Mercado", match: "/", icon: "chart" },
+  { href: "/", label: "Mercado", match: "/", icon: "chart", tab: true },
+  { href: "/proyecciones", label: "Proyecciones", match: "/proyecciones", icon: "fan", tab: true },
   { href: "/dolar-cripto/argentina", label: "Dólar cripto", match: "/dolar-cripto", icon: "dollar" },
+  { href: "/mi-cartera", label: "Mi cartera", match: "/mi-cartera", icon: "wallet", short: "Cartera", tab: true },
   { href: "/convertir", label: "Conversores", match: "/convertir", icon: "swap" },
-  { href: "/indice-miedo-codicia", label: "Miedo y codicia", match: "/indice-miedo-codicia", icon: "gauge" },
 ];
 
 const footerCols = [
@@ -51,6 +52,9 @@ const footerCols = [
       { href: "/dolar-cripto/argentina", label: "Dólar cripto" },
       { href: "/convertir", label: "Conversores" },
       { href: "/indice-miedo-codicia", label: "Índice de miedo y codicia" },
+      { href: "/proyecciones", label: "Proyecciones y escenarios" },
+      { href: "/compra-mensual", label: "Calculadora de compra mensual" },
+      { href: "/mi-cartera", label: "Mi cartera" },
     ],
   },
   {
@@ -106,6 +110,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       const name = c?.name ?? p.id;
       return { kind: "page" as const, href: `/convertir/${pairSlug(p.id, p.fiat)}`, title: `${name} a ${p.fiat.name}`, subtitle: "Conversor", image: "swap", keywords: `convertir ${c?.symbol ?? ""}` };
     }),
+    { kind: "page", href: "/proyecciones", title: "Proyecciones y escenarios", subtitle: "Rango probable y simulador", image: "fan", keywords: "prediccion pronostico cuanto valdra bitcoin polymarket" },
+    { kind: "page", href: "/compra-mensual", title: "Calculadora de compra mensual", subtitle: "Cuánto tendrías hoy (DCA)", image: "chart", keywords: "dca ahorro mensual" },
+    { kind: "page", href: "/mi-cartera", title: "Mi cartera", subtitle: "Tus monedas en vivo", image: "wallet", keywords: "portfolio portafolio" },
     { kind: "page", href: "/indice-miedo-codicia", title: "Índice de miedo y codicia", subtitle: "El humor del mercado hoy", image: "gauge", keywords: "fear greed sentimiento" },
   ];
   return (
@@ -192,7 +199,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <a href="https://www.coingecko.com" rel="noopener" className="underline hover:text-fg">
                 CoinGecko
               </a>
-              , Binance, CriptoYa, DolarApi y Alternative.me. © {new Date().getFullYear()} {site.name}.
+              , Binance, CriptoYa, DolarApi, ArgentinaDatos, Polymarket y Alternative.me. © {new Date().getFullYear()} {site.name}.
             </p>
           </div>
         </footer>

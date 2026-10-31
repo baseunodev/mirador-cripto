@@ -207,6 +207,21 @@ export default async function Home() {
         </Card>
       )}
 
+      <section className="mt-6 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3">
+        {[
+          { href: "/proyecciones", k: "Proyecciones", t: "¿Hasta dónde puede llegar bitcoin?", d: "Rango probable, escenarios y apuestas del mercado." },
+          { href: "/compra-mensual", k: "Compra mensual", t: "¿Y si comprabas un poco cada mes?", d: "Calculá cuánto tendrías hoy con precios reales." },
+          { href: "/mi-cartera", k: "Mi cartera", t: "Lo que tenés, en vivo", d: "En dólares y pesos. Sin cuenta ni billetera." },
+        ].map((x) => (
+          <Link key={x.href} href={x.href} className="group bg-surface p-5 transition hover:bg-surface-2">
+            <p className="eyebrow">{x.k}</p>
+            <p className="mt-1.5 font-semibold tracking-tight">{x.t}</p>
+            <p className="mt-1 text-sm text-muted">{x.d}</p>
+            <p className="mono mt-3 text-[11px] uppercase tracking-wider text-brand transition group-hover:translate-x-0.5">Abrir →</p>
+          </Link>
+        ))}
+      </section>
+
       <section className="mt-10">
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-[15px] font-semibold">

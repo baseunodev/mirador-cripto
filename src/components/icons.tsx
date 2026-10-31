@@ -33,6 +33,19 @@ const paths: Record<string, React.ReactNode> = {
     </>
   ),
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
+  fan: (
+    <>
+      <path d="M3 14h6" />
+      <path d="M9 14l12-8M9 14l12 0M9 14l12 6" />
+    </>
+  ),
+  wallet: (
+    <>
+      <path d="M4 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4z" />
+      <path d="M4 7V6a2 2 0 0 1 2-2h10" />
+      <path d="M16 13.5h.01" />
+    </>
+  ),
 };
 
 export function Icon({ name, size = 18, className = "" }: { name: string; size?: number; className?: string }) {

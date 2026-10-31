@@ -220,3 +220,51 @@ export async function getDiarioHeadlines(limit = 20): Promise<Headline[]> {
     return [];
   }
 }
+
+export type PredictionMarket = { question: string; yes: number; volume: number; endDate: string; url: string };
+
+/**
+ * Probabilidades de Polymarket para preguntas sobre las principales criptos.
+ * Se muestran como dato atribuido ("lo que apuesta el mercado"), nunca como recomendación.
+ */
+export async function getPredictionMarkets(limit = 6): Promise<PredictionMarket[]> {
+  if (MOCK) return mock.predictions().slice(0, limit);
+  type Raw = { question?: string; slug?: string; outcomes?: string; outcomePrices?: string; volume?: string | number; volumeNum?: number; endDate?: string; closed?: boolean; active?: boolean; events?: { slug?: string }[] };
+  const raw = await getJson<Raw[]>("https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=300&order=volumeNum&ascending=false", REVALIDATE.diario);
+  if (!Array.isArray(raw)) return [];
+  const re = /\b(bitcoin|btc|ethereum|eth|solana|sol|xrp)\b/i;
+  return raw
+    .flatMap((m) => {
+      if (!m.question || !re.test(m.question) || m.closed) return [];
+      try {
+        const outcomes = JSON.parse(m.outcomes ?? "[]") as string[];
+        const prices = (JSON.parse(m.outcomePrices ?? "[]") as string[]).map(Number);
+        const i = outcomes.findIndex((o) => /^yes$/i.test(o));
+        if (i < 0 || !(prices[i] >= 0)) return [];
+        const slug = m.events?.[0]?.slug ?? m.slug;
+        return [{ question: m.question, yes: prices[i], volume: Number(m.volumeNum ?? m.volume ?? 0), endDate: m.endDate ?? "", url: `https://polymarket.com/event/${slug}` }];
+      } catch {
+        return [];
+      }
+    })
+    .filter((m) => m.yes > 0.01 && m.yes < 0.99)
+    .slice(0, limit);
+}
+
+export type GapPoint = { date: string; cripto: number; blue: number };
+
+/** Historial diario del dólar cripto y el blue en Argentina (ArgentinaDatos). */
+export async function getArGapHistory(days = 180): Promise<GapPoint[]> {
+  if (MOCK) return mock.gapHistory(days);
+  type Raw = { fecha: string; venta: number }[];
+  const [cripto, blue] = await Promise.all([
+    getJson<Raw>("https://api.argentinadatos.com/v1/cotizaciones/dolares/cripto", 21600),
+    getJson<Raw>("https://api.argentinadatos.com/v1/cotizaciones/dolares/blue", 21600),
+  ]);
+  if (!cripto?.length || !blue?.length) return [];
+  const blueBy = new Map(blue.map((b) => [b.fecha.slice(0, 10), b.venta]));
+  return cripto
+    .map((c) => ({ date: c.fecha.slice(0, 10), cripto: c.venta, blue: blueBy.get(c.fecha.slice(0, 10)) ?? 0 }))
+    .filter((p) => p.cripto > 0 && p.blue > 0)
+    .slice(-days);
+}
